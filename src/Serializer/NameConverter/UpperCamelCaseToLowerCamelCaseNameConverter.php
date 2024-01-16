@@ -6,7 +6,6 @@ use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
 
 class UpperCamelCaseToLowerCamelCaseNameConverter implements NameConverterInterface
 {
-
     /**
      * @inheritDoc
      */
