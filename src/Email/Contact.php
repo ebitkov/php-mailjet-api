@@ -4,7 +4,7 @@ namespace ebitkov\Mailjet\Email;
 
 use DateTimeImmutable;
 
-final class Contact
+final class Contact implements Resource
 {
     public bool $isExcludedFromCampaign;
     public string $name;

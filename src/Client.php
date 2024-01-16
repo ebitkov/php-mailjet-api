@@ -4,6 +4,7 @@ namespace ebitkov\Mailjet;
 
 use ebitkov\Mailjet\Email\Contact;
 use ebitkov\Mailjet\Email\ListRecipient;
+use ebitkov\Mailjet\Email\Resource;
 use ebitkov\Mailjet\Filter\ContactFilter;
 use ebitkov\Mailjet\Filter\ListRecipientFilters;
 use ebitkov\Mailjet\Serializer\NameConverter\UpperCamelCaseToLowerCamelCaseNameConverter;
@@ -20,6 +21,8 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
+
+use function PHPStan\dumpType;
 
 final class Client
 {
@@ -140,17 +143,17 @@ final class Client
     /**
      * Serializes successful responses into objects.
      *
-     * @template T of object
+     * @template T of Resource
      *
      * @param class-string<T> $type
-     * @return Result<T>
+     * @return T|Result<T>|null
      */
-    public function serializeResult(Response $response, string $type): Result
+    public function serializeResult(Response $response, string $type, bool $singleResult = false): Resource|Result|null
     {
         /** @var list<T> $data */
         $data = [];
         foreach ($response->getData() as $item) {
-            $data[] = $this->serializer->denormalize(
+            $object = $this->serializer->denormalize(
                 $item,
                 $type,
                 'object',
@@ -158,6 +161,12 @@ final class Client
                     AbstractNormalizer::REQUIRE_ALL_PROPERTIES => true
                 ]
             );
+
+            if (in_array(ClientAware::class, class_uses($object))) {
+                $object->setClient($this);
+            }
+
+            $data[] = $object;
         }
 
         /** @var Result<T> $result */
@@ -165,6 +174,14 @@ final class Client
             $response->getTotal(),
             $data
         );
+
+        if ($singleResult) {
+            if ($result->count() > 0) {
+                return $result->first();
+            }
+            return null;
+        }
+
         return $result;
     }
 
@@ -186,5 +203,21 @@ final class Client
         );
 
         return $this->serializeResult($response, ListRecipient::class);
+    }
+
+    /**
+     * @throws RequestFailed
+     * @throws RequestAborted
+     */
+    public function getContactById(int $id): ?Contact
+    {
+        $response = $this->get(
+            Resources::$Contact,
+            [
+                'id' => $id
+            ]
+        );
+
+        return $this->serializeResult($response, Contact::class, true);
     }
 }
