@@ -2,7 +2,9 @@
 
 namespace ebitkov\Mailjet;
 
+use ebitkov\Mailjet\Email\Contact;
 use ebitkov\Mailjet\Email\ListRecipient;
+use ebitkov\Mailjet\Filter\ContactFilter;
 use ebitkov\Mailjet\Filter\ListRecipientFilters;
 use ebitkov\Mailjet\Serializer\NameConverter\UpperCamelCaseToLowerCamelCaseNameConverter;
 use GuzzleHttp\Exception\ConnectException;
@@ -41,23 +43,27 @@ final class Client
 
 
     /**
-     * @param array<ListRecipientFilters::*, mixed> $filters
+     * Retrieve a list of all contacts.
+     * Includes information about contact status and creation / activity timestamps.
      *
-     * @return Result<ListRecipient>
+     * @see https://dev.mailjet.com/email/reference/contacts/contact#v3_get_contact
      *
-     * @throws RequestAborted
+     * @param array<ContactFilter::*, mixed> $filters
+     * @return Result<Contact>
+     *
      * @throws RequestFailed
+     * @throws RequestAborted
      */
-    public function getListRecipients(array $filters = []): Result
+    public function getContacts(array $filters = []): Result
     {
         $response = $this->get(
-            Resources::$Listrecipient,
+            Resources::$Contact,
             [
-                'filters' => (new ListRecipientFilters())->resolve($filters)
+                'filters' => (new ContactFilter())->resolve($filters)
             ]
         );
 
-        return $this->serializeResult($response, ListRecipient::class);
+        return $this->serializeResult($response, Contact::class);
     }
 
     /**
@@ -160,5 +166,25 @@ final class Client
             $data
         );
         return $result;
+    }
+
+    /**
+     * @param array<ListRecipientFilters::*, mixed> $filters
+     *
+     * @return Result<ListRecipient>
+     *
+     * @throws RequestAborted
+     * @throws RequestFailed
+     */
+    public function getListRecipients(array $filters = []): Result
+    {
+        $response = $this->get(
+            Resources::$Listrecipient,
+            [
+                'filters' => (new ListRecipientFilters())->resolve($filters)
+            ]
+        );
+
+        return $this->serializeResult($response, ListRecipient::class);
     }
 }

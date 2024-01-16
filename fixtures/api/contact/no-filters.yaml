@@ -1,0 +1,29 @@
+request:
+    method: get
+    resource: 
+        0: 'contact'
+        1: ''
+        normalizer: 'Mailjet\Normalizer\ContactNormalizer'
+    
+    args:
+        filters: [ ]
+
+response:
+    status: 200
+    body:
+        Count: 1
+        Total: 1
+        Data:
+            -   IsExcludedFromCampaigns: true
+                Name: "New Contact"
+                CreatedAt: "2018-01-01T00:00:00"
+                DeliveredCount: 10
+                Email: "passenger@mailjet.com"
+                ExclusionFromCampaignUpdatedAt: "2018-01-01T00:00:00"
+                ID: 123456789
+                IsOptInPending: false
+                IsSpamComplaining: false
+                LastActivityAt: "2018-01-01T00:00:00"
+                LastUpdateAt: "2018-01-01T00:00:00"
+                UnsubscribedAt: "2018-01-01T00:00:00"
+                UnsubscribedBy: "2018-01-01T00:00:00"

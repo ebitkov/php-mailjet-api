@@ -3,6 +3,7 @@
 namespace ebitkov\Mailjet\Tests;
 
 use DateTime;
+use ebitkov\Mailjet\Email\Contact;
 use ebitkov\Mailjet\Email\ListRecipient;
 use ebitkov\Mailjet\RequestAborted;
 use ebitkov\Mailjet\RequestFailed;
@@ -16,7 +17,7 @@ class ClientTest extends MailjetApiTestCase
      * @throws RequestFailed
      * @throws RequestAborted
      */
-    public function testGetListRecipients(): void
+    public function testGetListRecipientsWithNoFilters(): void
     {
         $mailjet = $this->getClient();
         $result = $mailjet->getListRecipients();
@@ -34,5 +35,23 @@ class ClientTest extends MailjetApiTestCase
         $this->assertSame('abcdef123', $listRecipient->listName);
         $this->assertEquals(new DateTime('2018-01-01'), $listRecipient->subscribedAt);
         $this->assertEquals(new DateTime('2018-01-01'), $listRecipient->unsubscribedAt);
+    }
+
+    /**
+     * @throws Exception
+     * @throws RequestAborted
+     * @throws RequestFailed
+     */
+    public function testGetContactsWithNoFilters(): void
+    {
+        $mailjet = $this->getClient();
+        $result = $mailjet->getContacts();
+
+        $this->assertInstanceOf(Result::class, $result);
+        $this->assertSame(1, $result->totalCount);
+
+        $contact = $result->first();
+
+        $this->assertInstanceOf(Contact::class, $contact);
     }
 }
