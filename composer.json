@@ -29,7 +29,9 @@
   },
   "require-dev": {
     "phpunit/phpunit": "^10.5",
-    "dg/bypass-finals": "^1.5"
+    "dg/bypass-finals": "^1.5",
+    "symfony/yaml": "^7.0",
+    "symfony/finder": "^7.0"
   },
   "extra": {
     "sort-packages": true

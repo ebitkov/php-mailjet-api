@@ -4,57 +4,62 @@ namespace ebitkov\Mailjet\Tests;
 
 use DG\BypassFinals;
 use ebitkov\Mailjet\Client;
-use Mailjet\Resources;
 use Mailjet\Response;
 use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Yaml\Yaml;
 
-class MailjetApiTestCase extends TestCase
+abstract class MailjetApiTestCase extends TestCase
 {
+    private static ?Client $client = null;
+
+
     /**
      * @throws Exception
      */
     public function getClient(): Client
     {
-        BypassFinals::enable();
+        if (!self::$client) {
+            BypassFinals::enable();
 
-        $mailjet = $this->createMock(\Mailjet\Client::class);
+            $mailjet = $this->createStub(\Mailjet\Client::class);
 
-        $body = [
-            'Count' => 1,
-            'Data' => [
-                [
-                    "IsUnsubscribed" => true,
-                    "ContactID" => 987654321,
-                    "ID" => 1234567890,
-                    "IsActive" => true,
-                    "ListID" => 123456,
-                    "ListName" => "abcdef123",
-                    "SubscribedAt" => "2018-01-01T00:00:00",
-                    "UnsubscribedAt" => "2018-01-01T00:00:00"
-                ]
-            ],
-            'Total' => 1,
-        ];
-        $successfulListRecipientResponse = $this->createStub(Response::class);
-        $successfulListRecipientResponse->method('success')->willReturn(true);
-        $successfulListRecipientResponse->method('getStatus')->willReturn(200);
-        $successfulListRecipientResponse->method('getTotal')->willReturn(1);
-        $successfulListRecipientResponse->method('getBody')->willReturn($body);
-        $successfulListRecipientResponse->method('getData')->willReturn($body['Data']);
+            // load fixtures
+            $finder = new Finder();
+            $finder
+                ->in(__DIR__ . '/../fixtures/api')
+                ->name('*.yaml');
 
-        $getMap = [
-            [
-                Resources::$Listrecipient,
-                ['filters' => []],
-                [],
-                $successfulListRecipientResponse
-            ]
-        ];
+            $map = [];
 
-        $mailjet->method('get')
-            ->willReturnMap($getMap);
+            foreach ($finder as $file) {
+                $data = Yaml::parseFile($file);
+                $request = $data['request'];
+                $responseData = $data['response'];
 
-        return new Client($mailjet);
+                // configure return map
+                $response = $this->createStub(Response::class);
+
+                $response->method('success')->willReturn($responseData['status'] == 200);
+                $response->method('getStatus')->willReturn($responseData['status']);
+                $response->method('getTotal')->willReturn($responseData['body']['Total']);
+                $response->method('getBody')->willReturn($responseData['body']);
+                $response->method('getData')->willReturn($responseData['body']['Data']);
+
+                $map[$request['method']][] = [
+                    $request['resource'],
+                    $request['args'],
+                    [],
+                    $response
+                ];
+            }
+
+            $mailjet->method('get')->willReturnMap($map['get']);
+
+            self::$client = new Client($mailjet);
+        }
+
+        return self::$client;
     }
 }

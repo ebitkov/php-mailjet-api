@@ -1,0 +1,20 @@
+request:
+    method: get
+    resource: [ 'listrecipient', '' ]
+    args:
+        filters: [ ]
+
+response:
+    status: 200
+    body:
+        Count: 1
+        Data:
+            -   IsUnsubscribed: true
+                ContactID: 987654321
+                ID: 1234567890
+                IsActive: true
+                ListID: 123456
+                ListName: "abcdef123"
+                SubscribedAt: "2018-01-01T00:00:00"
+                UnsubscribedAt: "2018-01-01T00:00:00"
+        Total: 1
