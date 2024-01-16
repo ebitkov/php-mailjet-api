@@ -3,10 +3,10 @@
 namespace ebitkov\Mailjet;
 
 use ebitkov\Mailjet\Email\Contact;
-use ebitkov\Mailjet\Email\ListRecipient;
+use ebitkov\Mailjet\Email\Subscription;
 use ebitkov\Mailjet\Email\Resource;
 use ebitkov\Mailjet\Filter\ContactFilter;
-use ebitkov\Mailjet\Filter\ListRecipientFilters;
+use ebitkov\Mailjet\Filter\SubscriptionFilters;
 use ebitkov\Mailjet\Serializer\NameConverter\UpperCamelCaseToLowerCamelCaseNameConverter;
 use GuzzleHttp\Exception\ConnectException;
 use InvalidArgumentException;
@@ -186,9 +186,9 @@ final class Client
     }
 
     /**
-     * @param array<ListRecipientFilters::*, mixed> $filters
+     * @param array<SubscriptionFilters::*, mixed> $filters
      *
-     * @return Result<ListRecipient>
+     * @return Result<Subscription>
      *
      * @throws RequestAborted
      * @throws RequestFailed
@@ -198,11 +198,11 @@ final class Client
         $response = $this->get(
             Resources::$Listrecipient,
             [
-                'filters' => (new ListRecipientFilters())->resolve($filters)
+                'filters' => (new SubscriptionFilters())->resolve($filters)
             ]
         );
 
-        return $this->serializeResult($response, ListRecipient::class);
+        return $this->serializeResult($response, Subscription::class);
     }
 
     /**

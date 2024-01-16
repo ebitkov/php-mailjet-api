@@ -6,7 +6,7 @@ use DateTimeInterface;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-final class ListRecipientFilters extends OptionsResolver
+final class SubscriptionFilters extends OptionsResolver
 {
     public const BLOCKED = 'Blocked';
     public const CONTACT = 'Contact';

@@ -7,7 +7,11 @@ use ebitkov\Mailjet\ClientAware;
 use ebitkov\Mailjet\RequestAborted;
 use ebitkov\Mailjet\RequestFailed;
 
-final class ListRecipient implements Resource
+/**
+ * Contacts need to be subscribed to a contact list, in order to receive marketing emails directed to the respective list.
+ * @see https://dev.mailjet.com/email/reference/contacts/subscriptions/
+ */
+final class Subscription implements Resource
 {
     use ClientAware;
 

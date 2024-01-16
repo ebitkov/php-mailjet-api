@@ -3,13 +3,13 @@
 namespace ebitkov\Mailjet\Tests\Email;
 
 use ebitkov\Mailjet\Email\Contact;
-use ebitkov\Mailjet\Email\ListRecipient;
+use ebitkov\Mailjet\Email\Subscription;
 use ebitkov\Mailjet\RequestAborted;
 use ebitkov\Mailjet\RequestFailed;
 use ebitkov\Mailjet\Tests\MailjetApiTestCase;
 use PHPUnit\Framework\MockObject\Exception;
 
-class ListRecipientTest extends MailjetApiTestCase
+class SubscriptionTest extends MailjetApiTestCase
 {
     /**
      * @throws Exception
@@ -20,7 +20,7 @@ class ListRecipientTest extends MailjetApiTestCase
     {
         $client = $this->getClient();
         $result = $client->getListRecipients();
-        /** @var ListRecipient $listRecipient */
+        /** @var Subscription $listRecipient */
         $listRecipient = $result->first();
 
         $contact = $listRecipient->getContact();

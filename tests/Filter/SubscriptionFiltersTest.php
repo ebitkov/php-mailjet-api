@@ -2,16 +2,16 @@
 
 namespace ebitkov\Mailjet\Tests\Filter;
 
-use ebitkov\Mailjet\Filter\ListRecipientFilters;
+use ebitkov\Mailjet\Filter\SubscriptionFilters;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException;
 
-class ListRecipientFiltersTest extends TestCase
+class SubscriptionFiltersTest extends TestCase
 {
     public function testValidData(): void
     {
-        $resolver = new ListRecipientFilters();
+        $resolver = new SubscriptionFilters();
         $now = new \DateTime();
         $in = [
             'Blocked' => true,
@@ -51,7 +51,7 @@ class ListRecipientFiltersTest extends TestCase
     {
         $this->expectException(UndefinedOptionsException::class);
 
-        $resolver = new ListRecipientFilters();
+        $resolver = new SubscriptionFilters();
         $resolver->resolve(['invalidArgument' => 'hello']);
     }
 
@@ -59,7 +59,7 @@ class ListRecipientFiltersTest extends TestCase
     {
         $this->expectException(InvalidOptionsException::class);
 
-        $resolver = new ListRecipientFilters();
+        $resolver = new SubscriptionFilters();
         $resolver->resolve(['Contact' => 'hello']);
     }
 }

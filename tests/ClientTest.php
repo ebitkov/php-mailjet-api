@@ -4,7 +4,7 @@ namespace ebitkov\Mailjet\Tests;
 
 use DateTime;
 use ebitkov\Mailjet\Email\Contact;
-use ebitkov\Mailjet\Email\ListRecipient;
+use ebitkov\Mailjet\Email\Subscription;
 use ebitkov\Mailjet\RequestAborted;
 use ebitkov\Mailjet\RequestFailed;
 use ebitkov\Mailjet\Result;
@@ -26,7 +26,7 @@ class ClientTest extends MailjetApiTestCase
         $this->assertSame(1, $result->totalCount);
 
         $listRecipient = $result->first();
-        $this->assertInstanceOf(ListRecipient::class, $listRecipient);
+        $this->assertInstanceOf(Subscription::class, $listRecipient);
 
         $this->assertSame(true, $listRecipient->isUnsubscribed);
         $this->assertSame(987654321, $listRecipient->contactId);
