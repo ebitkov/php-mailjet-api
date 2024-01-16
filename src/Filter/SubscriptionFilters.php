@@ -6,7 +6,7 @@ use DateTimeInterface;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-final class SubscriptionFilters extends OptionsResolver
+final class SubscriptionFilters extends PaginatedFilters
 {
     public const BLOCKED = 'Blocked';
     public const CONTACT = 'Contact';
@@ -18,10 +18,6 @@ final class SubscriptionFilters extends OptionsResolver
     public const LIST_NAME = 'ListName';
     public const OPENED = 'Opened';
     public const UNSUB = 'Unsub';
-    public const LIMIT = 'Limit';
-    public const OFFSET = 'Offset';
-    public const COUNT_ONLY = 'countOnly';
-    public const SORT = 'Sort';
 
 
     public function __construct()
@@ -62,16 +58,6 @@ final class SubscriptionFilters extends OptionsResolver
         $this->setDefined(self::UNSUB);
         $this->setAllowedTypes(self::UNSUB, 'bool');
 
-        $this->setDefined(self::LIMIT);
-        $this->setAllowedTypes(self::LIMIT, 'int');
-
-        $this->setDefined(self::OFFSET);
-        $this->setAllowedTypes(self::OFFSET, 'int');
-
-        $this->setDefined(self::COUNT_ONLY);
-        $this->setAllowedTypes(self::COUNT_ONLY, 'bool');
-
-        $this->setDefined(self::SORT);
-        $this->setAllowedTypes(self::SORT, 'string');
+        parent::__construct();
     }
 }
