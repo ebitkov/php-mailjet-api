@@ -2,14 +2,22 @@
 
 namespace ebitkov\Mailjet;
 
+use Exception;
 use Mailjet\Response;
 use Throwable;
 
-class RequestAborted extends RequestFailed
+class RequestAborted extends Exception
 {
-    public function __construct(int $tries, Response $response, ?Throwable $previous = null)
+    public function __construct(int $tries, ?Response $response, ?Throwable $previous = null)
     {
-        parent::__construct($response, $previous);
-        $this->message = sprintf('Request aborted after %d tries.', $tries);
+        if ($response) {
+            $previous = new RequestFailed($response, $previous);
+        }
+
+        parent::__construct(
+            sprintf('Request aborted after %d tries.', $tries),
+            500,
+            $previous
+        );
     }
 }

@@ -31,7 +31,8 @@
     "phpunit/phpunit": "^10.5",
     "dg/bypass-finals": "^1.5",
     "symfony/yaml": "^7.0",
-    "symfony/finder": "^7.0"
+    "symfony/finder": "^7.0",
+    "phpstan/phpstan": "^1.10"
   },
   "extra": {
     "sort-packages": true

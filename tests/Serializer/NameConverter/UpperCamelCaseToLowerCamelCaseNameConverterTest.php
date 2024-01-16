@@ -1,12 +1,15 @@
 <?php
 
-namespace Serializer\NameConverter;
+namespace ebitkov\Mailjet\Tests\Serializer\NameConverter;
 
 use ebitkov\Mailjet\Serializer\NameConverter\UpperCamelCaseToLowerCamelCaseNameConverter;
 use PHPUnit\Framework\TestCase;
 
 class UpperCamelCaseToLowerCamelCaseNameConverterTest extends TestCase
 {
+    /**
+     * @return array<array<int, string>>
+     */
     public static function getData(): array
     {
         return [

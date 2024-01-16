@@ -41,6 +41,8 @@ final class Client
 
 
     /**
+     * @param array<ListRecipientFilters::*, mixed> $filters
+     *
      * @return Result<ListRecipient>
      *
      * @throws RequestAborted
@@ -61,6 +63,10 @@ final class Client
     /**
      * Sends a GET request.
      *
+     * @param array<int<0, 1>, string> $resource
+     * @param array<string|int, mixed> $args
+     * @param array<string|int, mixed> $options
+     *
      * @throws RequestAborted
      * @throws RequestFailed
      */
@@ -73,7 +79,10 @@ final class Client
      * Sends a request.
      * Additional logic to handle connection or "too many request" errors.
      *
-     * @param string<"get"|"post"|"put"|"delete"> $method
+     * @param "get"|"post"|"put"|"delete" $method
+     * @param array<int<0, 1>, string> $resource
+     * @param array<string|int, mixed> $args
+     * @param array<string|int, mixed> $options
      *
      * @throws RequestAborted
      * @throws RequestFailed
@@ -119,7 +128,7 @@ final class Client
             }
         } while ($currentTry < $this->maxRetries);
 
-        throw new RequestAborted($currentTry + 1, $response, $connectException);
+        throw new RequestAborted($currentTry + 1, $response ?? null, $connectException);
     }
 
     /**
@@ -132,6 +141,7 @@ final class Client
      */
     public function serializeResult(Response $response, string $type): Result
     {
+        /** @var list<T> $data */
         $data = [];
         foreach ($response->getData() as $item) {
             $data[] = $this->serializer->denormalize(
@@ -144,9 +154,11 @@ final class Client
             );
         }
 
-        return new Result(
+        /** @var Result<T> $result */
+        $result = new Result(
             $response->getTotal(),
             $data
         );
+        return $result;
     }
 }

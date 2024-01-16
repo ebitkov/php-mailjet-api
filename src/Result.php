@@ -11,7 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 final class Result extends ArrayCollection
 {
     /**
-     * @param array<T> $elements
+     * @param list<T> $elements
      */
     public function __construct(
         public readonly int $totalCount = 0,
