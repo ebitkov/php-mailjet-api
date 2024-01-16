@@ -27,4 +27,6 @@ final class ListRecipient implements Resource
     {
         return $this->client?->getContactById($this->contactId);
     }
+
+    # todo: getContactsList()
 }
