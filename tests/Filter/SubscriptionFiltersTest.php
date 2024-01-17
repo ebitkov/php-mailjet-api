@@ -2,7 +2,7 @@
 
 namespace ebitkov\Mailjet\Tests\Filter;
 
-use ebitkov\Mailjet\Filter\SubscriptionFilters;
+use ebitkov\Mailjet\Email\v3\Filter\SubscriptionFilters;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException;

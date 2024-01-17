@@ -1,10 +1,10 @@
 <?php
 
-namespace ebitkov\Mailjet\Tests\Email;
+namespace Email\v3;
 
-use ebitkov\Mailjet\Email\Contact;
-use ebitkov\Mailjet\Email\ContactsList;
-use ebitkov\Mailjet\Email\Subscription;
+use ebitkov\Mailjet\Email\v3\Contact;
+use ebitkov\Mailjet\Email\v3\ContactsList;
+use ebitkov\Mailjet\Email\v3\Subscription;
 use ebitkov\Mailjet\RequestAborted;
 use ebitkov\Mailjet\RequestFailed;
 use ebitkov\Mailjet\Tests\MailjetApiTestCase;

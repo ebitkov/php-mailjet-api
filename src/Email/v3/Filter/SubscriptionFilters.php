@@ -1,10 +1,9 @@
 <?php
 
-namespace ebitkov\Mailjet\Filter;
+namespace ebitkov\Mailjet\Email\v3\Filter;
 
 use DateTimeInterface;
 use Symfony\Component\OptionsResolver\Options;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class SubscriptionFilters extends PaginatedFilters
 {

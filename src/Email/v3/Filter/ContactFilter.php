@@ -1,6 +1,6 @@
 <?php
 
-namespace ebitkov\Mailjet\Filter;
+namespace ebitkov\Mailjet\Email\v3\Filter;
 
 final class ContactFilter extends PaginatedFilters
 {

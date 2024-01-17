@@ -1,6 +1,6 @@
 <?php
 
-namespace ebitkov\Mailjet\Filter;
+namespace ebitkov\Mailjet\Email\v3\Filter;
 
 use Symfony\Component\OptionsResolver\OptionsResolver;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace ebitkov\Mailjet\Email;
+namespace ebitkov\Mailjet\Email\v3;
 
 /**
  * This interface is mainly used for type declaration.

@@ -1,6 +1,6 @@
 <?php
 
-namespace ebitkov\Mailjet\Email;
+namespace ebitkov\Mailjet\Email\v3;
 
 use DateTimeImmutable;
 
@@ -17,4 +17,7 @@ final class Contact implements Resource
     public bool $isSpamComplaining;
     public DateTimeImmutable $lastActivityAt;
     public DateTimeImmutable $lastUpdateAt;
+
+    # todo: getSubscribedLists() (/contact/{contact_ID}/getcontactslists)
+    # todo: getProperties()
 }

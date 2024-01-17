@@ -2,14 +2,16 @@
 
 namespace ebitkov\Mailjet;
 
-use ebitkov\Mailjet\Email\Contact;
-use ebitkov\Mailjet\Email\ContactsList;
-use ebitkov\Mailjet\Email\Resource;
-use ebitkov\Mailjet\Email\Subscription;
-use ebitkov\Mailjet\Filter\ContactFilter;
-use ebitkov\Mailjet\Filter\ContactsListFilters;
-use ebitkov\Mailjet\Filter\SubscriptionFilters;
-use ebitkov\Mailjet\Serializer\NameConverter\UpperCamelCaseToLowerCamelCaseNameConverter;
+use ebitkov\Mailjet\Email\v3\Contact;
+use ebitkov\Mailjet\Email\v3\ContactsList;
+use ebitkov\Mailjet\Email\v3\Email;
+use ebitkov\Mailjet\Email\v3\Filter\ContactFilter;
+use ebitkov\Mailjet\Email\v3\Filter\ContactsListFilters;
+use ebitkov\Mailjet\Email\v3\Filter\SubscriptionFilters;
+use ebitkov\Mailjet\Email\v3\Resource;
+use ebitkov\Mailjet\Email\v3\SentEmail;
+use ebitkov\Mailjet\Email\v3\Subscription;
+use ebitkov\Mailjet\Serializer\NameConverter\MailjetNameConverter;
 use GuzzleHttp\Exception\ConnectException;
 use InvalidArgumentException;
 use Mailjet\Resources;
@@ -17,9 +19,11 @@ use Mailjet\Response;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
@@ -35,8 +39,13 @@ final class Client
     ) {
         $objectNormalizer = new ObjectNormalizer(
             new ClassMetadataFactory(new AttributeLoader()),
-            nameConverter: new UpperCamelCaseToLowerCamelCaseNameConverter(),
-            propertyTypeExtractor: new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()])
+            nameConverter: new MailjetNameConverter(),
+            propertyTypeExtractor: new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]),
+            defaultContext: [
+                AbstractNormalizer::REQUIRE_ALL_PROPERTIES => true,
+                AbstractObjectNormalizer::PRESERVE_EMPTY_OBJECTS => false,
+                AbstractObjectNormalizer::SKIP_NULL_VALUES => true,
+            ]
         );
         $this->serializer = new Serializer([
             $objectNormalizer,
@@ -89,7 +98,7 @@ final class Client
      * Additional logic to handle connection or "too many request" errors.
      *
      * @param "get"|"post"|"put"|"delete" $method
-     * @param array<int<0, 1>, string> $resource
+     * @param array<int<0, 2>, string|array<string, string>> $resource
      * @param array<string|int, mixed> $args
      * @param array<string|int, mixed> $options
      *
@@ -150,29 +159,23 @@ final class Client
      */
     public function serializeResult(Response $response, string $type, bool $singleResult = false): Resource|Result|null
     {
-        /** @var list<T> $data */
-        $data = [];
-        foreach ($response->getData() as $item) {
-            $object = $this->serializer->denormalize(
-                $item,
-                $type,
-                'object',
-                [
-                    AbstractNormalizer::REQUIRE_ALL_PROPERTIES => true
-                ]
-            );
+        $data = $response->getData();
 
-            if (in_array(ClientAware::class, class_uses($object))) {
-                $object->setClient($this);
-            }
+        // Special rule for Send API
+        if (isset($data['Sent'])) {
+            $data = $data['Sent'];
+        }
 
-            $data[] = $object;
+        /** @var list<T> $resources */
+        $resources = [];
+        foreach ($data as $item) {
+            $resources[] = $this->serialize($item, $type);
         }
 
         /** @var Result<T> $result */
         $result = new Result(
             $response->getTotal(),
-            $data
+            $resources
         );
 
         if ($singleResult) {
@@ -183,6 +186,25 @@ final class Client
         }
 
         return $result;
+    }
+
+    /**
+     * @template T of Resource
+     *
+     * @param array<string, mixed> $data
+     * @param class-string<T> $type
+     *
+     * @return T
+     */
+    public function serialize(array $data, string $type): Resource
+    {
+        $object = $this->serializer->denormalize($data, $type, 'object');
+
+        if (in_array(ClientAware::class, class_uses($object))) {
+            $object->setClient($this);
+        }
+
+        return $object;
     }
 
     /**
@@ -255,11 +277,60 @@ final class Client
     public function getContactsListById(int $id): ?ContactsList
     {
         $response = $this->get(
-            Resources::$Contactslist, [
+            Resources::$Contactslist,
+            [
                 'id' => $id
             ]
         );
 
         return $this->serializeResult($response, ContactsList::class, true);
+    }
+
+    /**
+     * Sends a message via Send API.
+     * Auto-detects v3 or v3.1 by the passed email object.
+     *
+     * @param Email $email
+     *
+     * @return Result<SentEmail>
+     *
+     * @throws RequestFailed
+     * @throws RequestAborted
+     * @throws ExceptionInterface
+     */
+    public function sendEmail(Email $email): Result
+    {
+        $response = $this->post(
+            Resources::$Email,
+            [
+                'body' => $this->normalize($email)
+            ]
+        );
+
+        return $this->serializeResult($response, SentEmail::class);
+    }
+
+    /**
+     * Sends a POST request.
+     *
+     * @param array<int<0, 2>, string|array<string, string>> $resource
+     * @param array<string, mixed> $args
+     * @param array<string, mixed> $options
+     *
+     * @throws RequestAborted
+     * @throws RequestFailed
+     */
+    public function post(array $resource, array $args = [], array $options = []): Response
+    {
+        return $this->sendRequest('post', $resource, $args, $options);
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws ExceptionInterface
+     */
+    public function normalize(object $data): array
+    {
+        return $this->serializer->normalize($data);
     }
 }

@@ -1,0 +1,21 @@
+request:
+    method: post
+    resource: [ "send", "" ]
+    args:
+        body:
+            FromEmail: "pilot@mailjet.com"
+            FromName: "Your Mailjet Pilot"
+            Recipients:
+                -   Email: "passenger@mailjet.com"
+                    Name: "Passenger 1"
+            Subject: "Your email flight plan!"
+            Text-part: "Dear passenger, welcome to Mailjet! May the delivery force be with you!"
+            Html-part: "<h3>Dear passenger, welcome to Mailjet!</h3><br />May the delivery force be with you!"
+
+response:
+    status: 201
+    body:
+        Sent:
+            -   Email: "passenger@mailjet.com"
+                MessageID: 1234567890987654400
+                MessageUUID: "1ab23cd4-e567-8901-2345-6789f0gh1i2j"

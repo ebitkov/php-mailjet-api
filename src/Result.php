@@ -14,7 +14,7 @@ final class Result extends ArrayCollection
      * @param list<T> $elements
      */
     public function __construct(
-        public readonly int $totalCount = 0,
+        public readonly ?int $totalCount = null,
         array $elements = []
     ) {
         parent::__construct($elements);

@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 
+use function PHPStan\dumpType;
+
 abstract class MailjetApiTestCase extends TestCase
 {
     private static ?Client $client = null;
@@ -41,11 +43,11 @@ abstract class MailjetApiTestCase extends TestCase
                 // configure return map
                 $response = $this->createStub(Response::class);
 
-                $response->method('success')->willReturn($responseData['status'] == 200);
+                $response->method('success')->willReturn(2 == floor($responseData['status'] / 100));
                 $response->method('getStatus')->willReturn($responseData['status']);
-                $response->method('getTotal')->willReturn($responseData['body']['Total']);
+                $response->method('getTotal')->willReturn($responseData['body']['Total'] ?? null);
                 $response->method('getBody')->willReturn($responseData['body']);
-                $response->method('getData')->willReturn($responseData['body']['Data']);
+                $response->method('getData')->willReturn($responseData['body']['Data'] ?? $responseData['body']);
 
                 $map[$request['method']][] = [
                     $request['resource'],
@@ -56,6 +58,7 @@ abstract class MailjetApiTestCase extends TestCase
             }
 
             $mailjet->method('get')->willReturnMap($map['get']);
+            $mailjet->method('post')->willReturnMap($map['post']);
 
             self::$client = new Client($mailjet);
         }
