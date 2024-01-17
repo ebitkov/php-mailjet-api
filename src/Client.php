@@ -243,4 +243,23 @@ final class Client
 
         return $this->serializeResult($response, ContactsList::class);
     }
+
+    /**
+     * Retrieve details for a specific contact list.
+     *
+     * @see https://dev.mailjet.com/email/reference/contacts/contact-list/#v3_get_contactslist_list_ID
+     *
+     * @throws RequestAborted
+     * @throws RequestFailed
+     */
+    public function getContactsListById(int $id): ?ContactsList
+    {
+        $response = $this->get(
+            Resources::$Contactslist, [
+                'id' => $id
+            ]
+        );
+
+        return $this->serializeResult($response, ContactsList::class, true);
+    }
 }

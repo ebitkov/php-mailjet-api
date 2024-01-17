@@ -3,6 +3,7 @@
 namespace ebitkov\Mailjet\Tests\Email;
 
 use ebitkov\Mailjet\Email\Contact;
+use ebitkov\Mailjet\Email\ContactsList;
 use ebitkov\Mailjet\Email\Subscription;
 use ebitkov\Mailjet\RequestAborted;
 use ebitkov\Mailjet\RequestFailed;
@@ -26,5 +27,22 @@ class SubscriptionTest extends MailjetApiTestCase
         $contact = $listRecipient->getContact();
 
         $this->assertInstanceOf(Contact::class, $contact);
+    }
+
+    /**
+     * @throws Exception
+     * @throws RequestAborted
+     * @throws RequestFailed
+     */
+    public function testGetContactsList(): void
+    {
+        $client = $this->getClient();
+        $result = $client->getListRecipients();
+        /** @var Subscription $listRecipient */
+        $listRecipient = $result->first();
+
+        $contact = $listRecipient->getContactsList();
+
+        $this->assertInstanceOf(ContactsList::class, $contact);
     }
 }

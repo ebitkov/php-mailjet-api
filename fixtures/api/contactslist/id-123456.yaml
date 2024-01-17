@@ -1,0 +1,18 @@
+request:
+    method: get
+    resource: [ 'contactslist', '' ]
+    
+    args:
+        id: 123456
+
+response:
+    status: 200
+    body:
+        Count: 1
+        Total: 1
+        Data:
+            -   Name: "my_contactslist"
+                Address: "abcdef123"
+                CreatedAt: "2018-01-01T00:00:00"
+                ID: 123456
+                SubscriberCount: 111

@@ -33,5 +33,12 @@ final class Subscription implements Resource
         return $this->client?->getContactById($this->contactId);
     }
 
-    # todo: getContactsList()
+    /**
+     * @throws RequestFailed
+     * @throws RequestAborted
+     */
+    public function getContactsList(): ?ContactsList
+    {
+        return $this->client?->getContactsListById($this->listId);
+    }
 }
