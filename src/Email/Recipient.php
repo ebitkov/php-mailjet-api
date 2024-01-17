@@ -2,12 +2,15 @@
 
 namespace ebitkov\Mailjet\Email;
 
+use Symfony\Component\Validator\Constraints as Assert;
+
 final class Recipient
 {
     /**
      * @param array<string, string> $vars
      */
     public function __construct(
+        #[Assert\Email]
         public string $email,
         public ?string $name = null,
         private array $vars = []

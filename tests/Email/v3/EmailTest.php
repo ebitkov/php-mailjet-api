@@ -6,15 +6,92 @@ use ebitkov\Mailjet\Email\Recipient;
 use ebitkov\Mailjet\Email\v3\Attachment;
 use ebitkov\Mailjet\Email\v3\Email;
 use ebitkov\Mailjet\Email\v3\SentEmail;
+use ebitkov\Mailjet\RequestAborted;
+use ebitkov\Mailjet\RequestFailed;
 use ebitkov\Mailjet\Result;
 use ebitkov\Mailjet\Tests\MailjetApiTestCase;
 use PHPUnit\Framework\MockObject\Exception;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
+use function PHPUnit\Framework\assertEmpty;
+use function PHPUnit\Framework\assertNotEmpty;
+
 class EmailTest extends MailjetApiTestCase
 {
+    public static function getValidationData(): array
+    {
+        /**
+         * 0: <Email> object to validate
+         * 1: <callback>: tests before validation
+         * 2: <int> expected violations
+         * 3: <list<string>> expected violation messages
+         */
+        return [
+            '"Recipients" and "To" not set' => [
+                self::getBasicEmail()->clearRecipients(),
+                function (Email $email) {
+                    assertEmpty($email->recipients);
+                    assertEmpty($email->getTo());
+                },
+                1,
+                [
+                    '"Recipients" or "To" is required.'
+                ]
+            ],
+            '"Cc" combined with "Recipients"' => [
+                self::getBasicEmail()->addCc(new Recipient('passenger@mailjet.com')),
+                function (Email $email) {
+                    assertNotEmpty($email->recipients);
+                    assertNotEmpty($email->getCc());
+                },
+                1,
+                [
+                    '"Cc" can not be used together with "Recipients". Use "To" instead.'
+                ]
+            ],
+            '"Bcc" combined with "Recipients"' => [
+                self::getBasicEmail()->addBcc(new Recipient('passenger@mailjet.com')),
+                function (Email $email) {
+                    assertNotEmpty($email->recipients);
+                    assertNotEmpty($email->getBcc());
+                },
+                1,
+                [
+                    '"Bcc" can not be used together with "Recipients". Use "To" instead.'
+                ]
+            ],
+            'Invalid value for "Mj-TemplateErrorDeliver"' => [
+                self::getBasicEmail()->setTemplateErrorDeliver('1'),
+                null,
+                1,
+                [
+                    'The value for "Mj-TemplateErrorDeliver" is not valid. Allowed are [ "deliver", "0" ].'
+                ]
+            ]
+        ];
+    }
+
+    private static function getBasicEmail(): Email
+    {
+        $email = new Email();
+
+        $email->fromEmail = 'pilot@mailjet.com';
+        $email->fromName = 'Your Mailjet Pilot';
+
+        $email->addRecipient(new Recipient('passenger@mailjet.com', 'Passenger 1'));
+
+        $email->subject = 'Your email flight plan!';
+        $email->textPart = 'Dear passenger, welcome to Mailjet! May the delivery force be with you!';
+        $email->htmlPart = '<h3>Dear passenger, welcome to Mailjet!</h3><br />May the delivery force be with you!';
+
+        return $email;
+    }
+
     /**
      * @throws Exception
+     * @throws ExceptionInterface
+     * @throws RequestAborted
+     * @throws RequestFailed
      */
     public function testSendEmail(): void
     {
@@ -44,6 +121,23 @@ class EmailTest extends MailjetApiTestCase
         $this->assertSame('passenger@mailjet.com', $sentMail->email);
         $this->assertSame(1234567890987654400, $sentMail->messageId);
         $this->assertSame('1ab23cd4-e567-8901-2345-6789f0gh1i2j', $sentMail->messageUuid);
+    }
+
+    /**
+     * @throws Exception
+     * @throws RequestFailed
+     * @throws RequestAborted
+     * @throws ExceptionInterface
+     */
+    public function testSendInvalidEmail(): void
+    {
+        $client = $this->getClient();
+        $email = $this->getBasicEmail()->clearRecipients();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('"Recipients" or "To" is required.');
+
+        $client->sendEmail($email);
     }
 
     /**
@@ -185,5 +279,45 @@ class EmailTest extends MailjetApiTestCase
         ];
 
         $this->assertEquals($expected, $client->normalize($email));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testValidEmail(): void
+    {
+        $client = $this->getClient();
+        $email = $this->getBasicEmail();
+        $violations = $client->validate($email);
+
+        $this->assertCount(0, $violations);
+    }
+
+    /**
+     * @dataProvider getValidationData
+     * @param list<string> $expectedMessages
+     * @throws Exception
+     */
+    public function testValidation(
+        Email $email,
+        ?callable $preValidationTests,
+        int $expectedViolations,
+        array $expectedMessages
+    ): void {
+        $client = $this->getClient();
+
+        if ($preValidationTests) {
+            $preValidationTests($email);
+        }
+
+        $violations = $client->validate($email);
+
+        $this->assertCount($expectedViolations, $violations);
+        foreach ($violations as $violation) {
+            $this->assertTrue(
+                in_array($violation->getMessage(), $expectedMessages),
+                sprintf('Message << %s >> not expected!', $violation->getMessage())
+            );
+        }
     }
 }

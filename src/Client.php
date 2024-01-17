@@ -27,16 +27,21 @@ use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
+use Symfony\Component\Validator\Validation;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class Client
 {
     private Serializer $serializer;
+    private ValidatorInterface $validator;
 
     public function __construct(
         private readonly \Mailjet\Client $mailjet,
         private readonly int $maxRetries = 3,
         private readonly int $secondsToWaitOnTooManyRequests = 10
     ) {
+        // setup serializer
         $objectNormalizer = new ObjectNormalizer(
             new ClassMetadataFactory(new AttributeLoader()),
             nameConverter: new MailjetNameConverter(),
@@ -51,6 +56,11 @@ final class Client
             $objectNormalizer,
             new DateTimeNormalizer()
         ]);
+
+        // setup validator
+        $this->validator = Validation::createValidatorBuilder()
+            ->enableAttributeMapping()
+            ->getValidator();
     }
 
 
@@ -300,6 +310,13 @@ final class Client
      */
     public function sendEmail(Email $email): Result
     {
+        // validate data
+        $violations = $this->validate($email);
+
+        if (0 !== count($violations)) {
+            throw new InvalidArgumentException($violations->get(0)->getMessage());
+        }
+
         $response = $this->post(
             Resources::$Email,
             [
@@ -308,6 +325,11 @@ final class Client
         );
 
         return $this->serializeResult($response, SentEmail::class);
+    }
+
+    public function validate(object $object): ConstraintViolationListInterface
+    {
+        return $this->validator->validate($object);
     }
 
     /**
@@ -328,6 +350,7 @@ final class Client
     /**
      * @return array<string, mixed>
      * @throws ExceptionInterface
+     * @internal
      */
     public function normalize(object $data): array
     {
