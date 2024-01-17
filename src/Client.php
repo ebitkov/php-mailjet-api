@@ -3,9 +3,11 @@
 namespace ebitkov\Mailjet;
 
 use ebitkov\Mailjet\Email\Contact;
-use ebitkov\Mailjet\Email\Subscription;
+use ebitkov\Mailjet\Email\ContactsList;
 use ebitkov\Mailjet\Email\Resource;
+use ebitkov\Mailjet\Email\Subscription;
 use ebitkov\Mailjet\Filter\ContactFilter;
+use ebitkov\Mailjet\Filter\ContactsListFilters;
 use ebitkov\Mailjet\Filter\SubscriptionFilters;
 use ebitkov\Mailjet\Serializer\NameConverter\UpperCamelCaseToLowerCamelCaseNameConverter;
 use GuzzleHttp\Exception\ConnectException;
@@ -21,8 +23,6 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
-
-use function PHPStan\dumpType;
 
 final class Client
 {
@@ -219,5 +219,28 @@ final class Client
         );
 
         return $this->serializeResult($response, Contact::class, true);
+    }
+
+    /**
+     * Retrieve details for all contact lists - name, subscriber count, creation timestamp, deletion status.
+     *
+     * @see https://dev.mailjet.com/email/reference/contacts/contact-list/#v3_get_contactslist
+     *
+     * @param array<ContactsListFilters::*, mixed> $filters
+     * @return Result<ContactsList>
+     *
+     * @throws RequestFailed
+     * @throws RequestAborted
+     */
+    public function getContactsLists(array $filters = []): Result
+    {
+        $response = $this->get(
+            Resources::$Contactslist,
+            [
+                'filters' => (new ContactsListFilters())->resolve($filters)
+            ]
+        );
+
+        return $this->serializeResult($response, ContactsList::class);
     }
 }

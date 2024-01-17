@@ -8,7 +8,8 @@ use ebitkov\Mailjet\RequestAborted;
 use ebitkov\Mailjet\RequestFailed;
 
 /**
- * Contacts need to be subscribed to a contact list, in order to receive marketing emails directed to the respective list.
+ * Contacts need to be subscribed to a contact list,
+ * in order to receive marketing emails directed to the respective list.
  * @see https://dev.mailjet.com/email/reference/contacts/subscriptions/
  */
 final class Subscription implements Resource
