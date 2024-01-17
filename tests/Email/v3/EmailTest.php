@@ -2,9 +2,10 @@
 
 namespace Email\v3;
 
-use ebitkov\Mailjet\Email\Recipient;
+use ebitkov\Mailjet\Email\Contact;
 use ebitkov\Mailjet\Email\v3\Attachment;
 use ebitkov\Mailjet\Email\v3\Email;
+use ebitkov\Mailjet\Email\v3\Recipient;
 use ebitkov\Mailjet\Email\v3\SentEmail;
 use ebitkov\Mailjet\RequestAborted;
 use ebitkov\Mailjet\RequestFailed;

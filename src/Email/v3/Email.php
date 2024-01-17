@@ -2,7 +2,6 @@
 
 namespace ebitkov\Mailjet\Email\v3;
 
-use ebitkov\Mailjet\Email\Recipient;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
