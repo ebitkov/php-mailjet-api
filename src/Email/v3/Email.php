@@ -175,14 +175,16 @@ final class Email
         return null;
     }
 
-    public function addAttachment(Attachment $attachment): void
+    public function addAttachment(Attachment $attachment): self
     {
         $this->attachments[] = $attachment;
+        return $this;
     }
 
-    public function addInlineAttachment(Attachment $attachment): void
+    public function addInlineAttachment(Attachment $attachment): self
     {
         $this->inlineAttachments[] = $attachment;
+        return $this;
     }
 
     /**
@@ -197,9 +199,10 @@ final class Email
         return $this;
     }
 
-    public function addRecipient(Recipient $recipient): void
+    public function addRecipient(Recipient $recipient): self
     {
         $this->recipients[] = $recipient;
+        return $this;
     }
 
     public function clearRecipients(): self
@@ -211,6 +214,215 @@ final class Email
     public function setTemplateErrorDeliver(string $templateErrorDeliver): self
     {
         $this->templateErrorDeliver = $templateErrorDeliver;
+        return $this;
+    }
+
+    public function getFromEmail(): string
+    {
+        return $this->fromEmail;
+    }
+
+    public function setFromEmail(string $fromEmail): self
+    {
+        $this->fromEmail = $fromEmail;
+        return $this;
+    }
+
+    public function getFromName(): string
+    {
+        return $this->fromName;
+    }
+
+    public function setFromName(string $fromName): self
+    {
+        $this->fromName = $fromName;
+        return $this;
+    }
+
+    public function isSender(): bool
+    {
+        return $this->sender;
+    }
+
+    public function setSender(bool $sender): self
+    {
+        $this->sender = $sender;
+        return $this;
+    }
+
+    public function getSubject(): string
+    {
+        return $this->subject;
+    }
+
+    public function setSubject(string $subject): self
+    {
+        $this->subject = $subject;
+        return $this;
+    }
+
+    public function getTextPart(): ?string
+    {
+        return $this->textPart;
+    }
+
+    public function setTextPart(string $textPart): self
+    {
+        $this->textPart = $textPart;
+        return $this;
+    }
+
+    public function getHtmlPart(): ?string
+    {
+        return $this->htmlPart;
+    }
+
+    public function setHtmlPart(string $htmlPart): self
+    {
+        $this->htmlPart = $htmlPart;
+        return $this;
+    }
+
+    public function getTemplateId(): int
+    {
+        return $this->templateId;
+    }
+
+    public function setTemplateId(int $templateId): self
+    {
+        $this->templateId = $templateId;
+        return $this;
+    }
+
+    public function isTemplateLanguage(): bool
+    {
+        return $this->templateLanguage;
+    }
+
+    public function setTemplateLanguage(bool $templateLanguage): self
+    {
+        $this->templateLanguage = $templateLanguage;
+        return $this;
+    }
+
+    public function getTemplateErrorReporting(): string
+    {
+        return $this->templateErrorReporting;
+    }
+
+    public function setTemplateErrorReporting(string $templateErrorReporting): self
+    {
+        $this->templateErrorReporting = $templateErrorReporting;
+        return $this;
+    }
+
+    public function getAttachments(): array
+    {
+        return $this->attachments;
+    }
+
+    public function setAttachments(array $attachments): self
+    {
+        $this->attachments = $attachments;
+        return $this;
+    }
+
+    public function getInlineAttachments(): array
+    {
+        return $this->inlineAttachments;
+    }
+
+    public function setInlineAttachments(array $inlineAttachments): self
+    {
+        $this->inlineAttachments = $inlineAttachments;
+        return $this;
+    }
+
+    public function getPrio(): int
+    {
+        return $this->prio;
+    }
+
+    public function setPrio(int $prio): self
+    {
+        $this->prio = $prio;
+        return $this;
+    }
+
+    public function getCampaign(): string
+    {
+        return $this->campaign;
+    }
+
+    public function setCampaign(string $campaign): self
+    {
+        $this->campaign = $campaign;
+        return $this;
+    }
+
+    public function getDeduplicateCampaign(): int
+    {
+        return $this->deduplicateCampaign;
+    }
+
+    public function setDeduplicateCampaign(int $deduplicateCampaign): self
+    {
+        $this->deduplicateCampaign = $deduplicateCampaign;
+        return $this;
+    }
+
+    public function getTrackOpen(): int
+    {
+        return $this->trackOpen;
+    }
+
+    public function setTrackOpen(int $trackOpen): self
+    {
+        $this->trackOpen = $trackOpen;
+        return $this;
+    }
+
+    public function getCustomId(): string
+    {
+        return $this->customId;
+    }
+
+    public function setCustomId(string $customId): self
+    {
+        $this->customId = $customId;
+        return $this;
+    }
+
+    public function getEventPayload(): string
+    {
+        return $this->eventPayload;
+    }
+
+    public function setEventPayload(string $eventPayload): self
+    {
+        $this->eventPayload = $eventPayload;
+        return $this;
+    }
+
+    public function getHeaders(): array
+    {
+        return $this->headers;
+    }
+
+    public function setHeaders(array $headers): self
+    {
+        $this->headers = $headers;
+        return $this;
+    }
+
+    public function getVars(): array
+    {
+        return $this->vars;
+    }
+
+    public function setVars(array $vars): self
+    {
+        $this->vars = $vars;
         return $this;
     }
 }

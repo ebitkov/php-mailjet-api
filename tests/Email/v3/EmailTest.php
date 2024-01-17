@@ -13,6 +13,7 @@ use ebitkov\Mailjet\Tests\MailjetApiTestCase;
 use PHPUnit\Framework\MockObject\Exception;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
+use function PHPStan\dumpType;
 use function PHPUnit\Framework\assertEmpty;
 use function PHPUnit\Framework\assertNotEmpty;
 
@@ -73,18 +74,13 @@ class EmailTest extends MailjetApiTestCase
 
     private static function getBasicEmail(): Email
     {
-        $email = new Email();
-
-        $email->fromEmail = 'pilot@mailjet.com';
-        $email->fromName = 'Your Mailjet Pilot';
-
-        $email->addRecipient(new Recipient('passenger@mailjet.com', 'Passenger 1'));
-
-        $email->subject = 'Your email flight plan!';
-        $email->textPart = 'Dear passenger, welcome to Mailjet! May the delivery force be with you!';
-        $email->htmlPart = '<h3>Dear passenger, welcome to Mailjet!</h3><br />May the delivery force be with you!';
-
-        return $email;
+        return (new Email())
+            ->setFromName('Your Mailjet Pilot')
+            ->setFromEmail('pilot@mailjet.com')
+            ->addRecipient(new Recipient('passenger@mailjet.com', 'Passenger 1'))
+            ->setSubject('Your email flight plan!')
+            ->setTextPart('Dear passenger, welcome to Mailjet! May the delivery force be with you!')
+            ->setHtmlPart('<h3>Dear passenger, welcome to Mailjet!</h3><br />May the delivery force be with you!');
     }
 
     /**
@@ -96,17 +92,7 @@ class EmailTest extends MailjetApiTestCase
     public function testSendEmail(): void
     {
         $client = $this->getClient();
-
-        $email = new Email();
-
-        $email->fromEmail = 'pilot@mailjet.com';
-        $email->fromName = 'Your Mailjet Pilot';
-
-        $email->addRecipient(new Recipient('passenger@mailjet.com', 'Passenger 1'));
-
-        $email->subject = 'Your email flight plan!';
-        $email->textPart = 'Dear passenger, welcome to Mailjet! May the delivery force be with you!';
-        $email->htmlPart = '<h3>Dear passenger, welcome to Mailjet!</h3><br />May the delivery force be with you!';
+        $email = $this->getBasicEmail();
 
         $result = $client->sendEmail($email);
 
@@ -152,51 +138,48 @@ class EmailTest extends MailjetApiTestCase
 
         $email = new Email();
 
-        $email->fromEmail = 'pilot@mailjet.com';
-        $email->fromName = 'Your Mailjet Pilot';
-        $email->sender = false;
-
-        $email->addRecipient(
-            new Recipient(
-                'passenger@mailjet.com',
-                'Passenger 1',
-                [
-                    'var1' => 'foo',
-                    'var2' => 'bar'
-                ]
+        $email
+            ->setFromEmail('pilot@mailjet.com')
+            ->setFromName('Your Mailjet Pilot')
+            ->setSender(false)
+            ->addRecipient(
+                new Recipient(
+                    'passenger@mailjet.com',
+                    'Passenger 1',
+                    [
+                        'var1' => 'foo',
+                        'var2' => 'bar'
+                    ]
+                )
             )
-        );
-
-        $email->addTo(new Recipient('passenger2@mailjet.com', 'Passenger 2'));
-        $email->addTo(new Recipient('passenger3@mailjet.com', 'Passenger 3'));
-
-        $email->addCc(new Recipient('passenger4@mailjet.com', 'Passenger 4'));
-        $email->addCc(new Recipient('passenger5@mailjet.com', 'Passenger 5'));
-
-        $email->addBcc(new Recipient('passenger6@mailjet.com', 'Passenger 6'));
-        $email->addBcc(new Recipient('passenger7@mailjet.com', 'Passenger 7'));
-
-        $email->subject = 'Your email flight plan!';
-        $email->textPart = 'Dear passenger, welcome to Mailjet! May the delivery force be with you!';
-        $email->htmlPart = '<h3>Dear passenger, welcome to Mailjet!</h3><br />May the delivery force be with you!';
-
-        $email->templateId = 123456;
-        $email->templateLanguage = false;
-        $email->templateErrorReporting = 'flightcontrol@mailjet.com';
-        $email->templateErrorDeliver = '0';
+            ->addTo(new Recipient('passenger2@mailjet.com', 'Passenger 2'))
+            ->addTo(new Recipient('passenger3@mailjet.com', 'Passenger 3'))
+            ->addCc(new Recipient('passenger4@mailjet.com', 'Passenger 4'))
+            ->addCc(new Recipient('passenger5@mailjet.com', 'Passenger 5'))
+            ->addBcc(new Recipient('passenger6@mailjet.com', 'Passenger 6'))
+            ->addBcc(new Recipient('passenger7@mailjet.com', 'Passenger 7'))
+            ->setSubject('Your email flight plan!')
+            ->setTextPart('Dear passenger, welcome to Mailjet! May the delivery force be with you!')
+            ->setHtmlPart('<h3>Dear passenger, welcome to Mailjet!</h3><br />May the delivery force be with you!')
+            ->setTemplateId(123456)
+            ->setTemplateLanguage(false)
+            ->setTemplateErrorReporting('flightcontrol@mailjet.com')
+            ->setTemplateErrorDeliver('0');
 
         $attachment = new Attachment();
+
         $attachment->filename = 'image.jpg';
         $attachment->contentType = 'image/jpeg';
         $attachment->content = 'data:image/jpeg;base64,';
-        $email->addAttachment($attachment);
-        $email->addInlineAttachment($attachment);
 
-        $email->prio = 2;
-        $email->campaign = 'Test';
-        $email->deduplicateCampaign = 0;
-        $email->trackOpen = 0;
-        $email->customId = '123456';
+        $email
+            ->addAttachment($attachment)
+            ->addInlineAttachment($attachment)
+            ->setPrio(2)
+            ->setCampaign('Test')
+            ->setDeduplicateCampaign(0)
+            ->setTrackOpen(0)
+            ->setCustomId('123456');
 
         $expected = [
             'FromEmail' => 'pilot@mailjet.com',
