@@ -4,6 +4,9 @@ request:
     
     args:
         filters: [ ]
+    
+    options:
+        version: v3
 
 response:
     status: 200

@@ -1,6 +1,6 @@
 <?php
 
-namespace ebitkov\Mailjet\Email\v3dot1;
+namespace ebitkov\Mailjet\Email;
 
 class InlineAttachment extends Attachment
 {

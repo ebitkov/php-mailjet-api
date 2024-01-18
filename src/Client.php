@@ -2,20 +2,22 @@
 
 namespace ebitkov\Mailjet;
 
+use ebitkov\Mailjet\Email\EmailList;
+use ebitkov\Mailjet\Email\Resource;
 use ebitkov\Mailjet\Email\v3\Contact;
 use ebitkov\Mailjet\Email\v3\ContactsList;
-use ebitkov\Mailjet\Email\v3\Email;
 use ebitkov\Mailjet\Email\v3\Filter\ContactFilter;
 use ebitkov\Mailjet\Email\v3\Filter\ContactsListFilters;
 use ebitkov\Mailjet\Email\v3\Filter\SubscriptionFilters;
-use ebitkov\Mailjet\Email\v3\Resource;
 use ebitkov\Mailjet\Email\v3\SentEmail;
 use ebitkov\Mailjet\Email\v3\Subscription;
 use ebitkov\Mailjet\Serializer\NameConverter\MailjetNameConverter;
+use ebitkov\Mailjet\Serializer\Normalizer\MailjetEmailNormalizer;
 use GuzzleHttp\Exception\ConnectException;
 use InvalidArgumentException;
 use Mailjet\Resources;
 use Mailjet\Response;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
@@ -33,14 +35,29 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class Client
 {
+    public const API_VERSION = 'version';
+    public const MAX_RETRIES = 'max_retries';
+    public const SECONDS_TO_WAIT_ON_TOO_MANY_REQUESTS = 'seconds_to_wait_on_too_many_requests';
+
     private Serializer $serializer;
     private ValidatorInterface $validator;
 
+    /**
+     * @var array{version: string, max_retries: int, seconds_to_wait_on_too_many_requests: int}
+     */
+    private array $settings;
+
+    /**
+     * @param \Mailjet\Client $mailjet
+     * @param array<self::*, mixed> $settings
+     */
     public function __construct(
         private readonly \Mailjet\Client $mailjet,
-        private readonly int $maxRetries = 3,
-        private readonly int $secondsToWaitOnTooManyRequests = 10
+        array $settings = []
     ) {
+        // configure
+        $this->initSettings($settings);
+
         // setup serializer
         $objectNormalizer = new ObjectNormalizer(
             new ClassMetadataFactory(new AttributeLoader()),
@@ -52,9 +69,11 @@ final class Client
                 AbstractObjectNormalizer::SKIP_NULL_VALUES => true,
             ]
         );
+
         $this->serializer = new Serializer([
+            new MailjetEmailNormalizer(),
             $objectNormalizer,
-            new DateTimeNormalizer()
+            new DateTimeNormalizer(),
         ]);
 
         // setup validator
@@ -63,6 +82,32 @@ final class Client
             ->getValidator();
     }
 
+    /**
+     * @param array<self::*, mixed> $settings
+     * @return void
+     */
+    private function initSettings(array $settings): void
+    {
+        $resolver = new OptionsResolver();
+
+        $resolver->setDefaults([
+            /*
+             * The version is mainly used for the Send API.
+             * All other endpoints will automatically fall back to v3, since they don't support v3.1,
+             */
+            self::API_VERSION => 'v3.1',
+            self::MAX_RETRIES => 3,
+            self::SECONDS_TO_WAIT_ON_TOO_MANY_REQUESTS => 10,
+        ]);
+
+        $resolver->setAllowedValues(self::API_VERSION, ['v3', 'v3.1']);
+        $resolver->setAllowedTypes(self::MAX_RETRIES, 'int');
+        $resolver->setAllowedTypes(self::SECONDS_TO_WAIT_ON_TOO_MANY_REQUESTS, 'int');
+
+        $resolver->setIgnoreUndefined();
+
+        $this->settings = $resolver->resolve($settings);
+    }
 
     /**
      * Retrieve a list of all contacts.
@@ -82,6 +127,9 @@ final class Client
             Resources::$Contact,
             [
                 'filters' => (new ContactFilter())->resolve($filters)
+            ],
+            [
+                'version' => 'v3' # /contact only supports v3
             ]
         );
 
@@ -141,7 +189,7 @@ final class Client
                      */
                     if ($response->getStatus() == 429) {
                         // Warte etwas ab
-                        sleep($this->secondsToWaitOnTooManyRequests);
+                        sleep($this->settings[self::SECONDS_TO_WAIT_ON_TOO_MANY_REQUESTS]);
                         // und sende die Anfrage erneut
                         return $this->sendRequest($method, $resource, $args, $options, $currentTry++);
                     }
@@ -154,7 +202,7 @@ final class Client
                  */
                 $currentTry++;
             }
-        } while ($currentTry < $this->maxRetries);
+        } while ($currentTry < $this->settings[self::MAX_RETRIES]);
 
         throw new RequestAborted($currentTry + 1, $response ?? null, $connectException);
     }
@@ -231,6 +279,9 @@ final class Client
             Resources::$Listrecipient,
             [
                 'filters' => (new SubscriptionFilters())->resolve($filters)
+            ],
+            [
+                'version' => 'v3' # /listrecipient only supports v3
             ]
         );
 
@@ -247,6 +298,9 @@ final class Client
             Resources::$Contact,
             [
                 'id' => $id
+            ],
+            [
+                'version' => 'v3' # /contact/{ID} only supports v3
             ]
         );
 
@@ -270,6 +324,9 @@ final class Client
             Resources::$Contactslist,
             [
                 'filters' => (new ContactsListFilters())->resolve($filters)
+            ],
+            [
+                'version' => 'v3' # /contactslist only supports v3
             ]
         );
 
@@ -290,6 +347,9 @@ final class Client
             Resources::$Contactslist,
             [
                 'id' => $id
+            ],
+            [
+                'version' => 'v3' # /contactslist/{ID} only supports v3
             ]
         );
 
@@ -297,10 +357,8 @@ final class Client
     }
 
     /**
-     * Sends a message via Send API.
-     * Auto-detects v3 or v3.1 by the passed email object.
-     *
-     * @param Email $email
+     * Sends email messages via the Send API.
+     * Automatically adjusts the request corresponding to the configured version (v3 / v3.1).
      *
      * @return Result<SentEmail>
      *
@@ -308,19 +366,23 @@ final class Client
      * @throws RequestAborted
      * @throws ExceptionInterface
      */
-    public function sendEmail(Email $email): Result
+    public function sendEmail(EmailList $emailList): Result
     {
         // validate data
-        $violations = $this->validate($email);
+        $violations = $this->validate($emailList);
 
         if (0 !== count($violations)) {
+            // return the first violation as an exception
             throw new InvalidArgumentException($violations->get(0)->getMessage());
         }
 
         $response = $this->post(
             Resources::$Email,
             [
-                'body' => $this->normalize($email)
+                'body' => $this->normalize($emailList, 'send_api')
+            ],
+            [
+                'version' => $this->settings[self::API_VERSION]
             ]
         );
 
@@ -352,8 +414,19 @@ final class Client
      * @throws ExceptionInterface
      * @internal
      */
-    public function normalize(object $data): array
+    public function normalize(object $data, string $format = null): array
     {
-        return $this->serializer->normalize($data);
+        return $this->serializer->normalize(
+            $data,
+            $format,
+            [
+                'mj_api_version' => $this->settings[self::API_VERSION]
+            ]
+        );
+    }
+
+    public function getApiVersion(): string
+    {
+        return $this->settings[self::API_VERSION];
     }
 }

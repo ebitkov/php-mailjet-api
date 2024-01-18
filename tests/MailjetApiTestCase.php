@@ -14,15 +14,18 @@ use function PHPStan\dumpType;
 
 abstract class MailjetApiTestCase extends TestCase
 {
-    private static ?Client $client = null;
+    /**
+     * @var array<"v3"|"v3.1", Client>
+     */
+    private static array $clients = [];
 
 
     /**
      * @throws Exception
      */
-    public function getClient(): Client
+    public function getClient(string $version = 'v3.1'): Client
     {
-        if (!self::$client) {
+        if (!isset(self::$clients[$version])) {
             BypassFinals::enable();
 
             $mailjet = $this->createStub(\Mailjet\Client::class);
@@ -52,7 +55,7 @@ abstract class MailjetApiTestCase extends TestCase
                 $map[$request['method']][] = [
                     $request['resource'],
                     $request['args'],
-                    [],
+                    $request['options'],
                     $response
                 ];
             }
@@ -60,9 +63,9 @@ abstract class MailjetApiTestCase extends TestCase
             $mailjet->method('get')->willReturnMap($map['get']);
             $mailjet->method('post')->willReturnMap($map['post']);
 
-            self::$client = new Client($mailjet);
+            self::$clients[$version] = new Client($mailjet, ['version' => $version]);
         }
 
-        return self::$client;
+        return self::$clients[$version];
     }
 }

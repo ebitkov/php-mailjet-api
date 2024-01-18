@@ -4,7 +4,7 @@ namespace ebitkov\Mailjet\Email;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-class Contact
+class EmailAddress
 {
     public function __construct(
         #[Assert\Email]

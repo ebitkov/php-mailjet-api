@@ -14,11 +14,7 @@ class UpperCamelCaseToLowerCamelCaseNameConverterTest extends TestCase
     {
         return [
             ['IsUnsubscribed', 'isUnsubscribed'],
-            ['ContactID', 'contactId'],
-            ['ID', 'id'],
-            ['UUID', 'uuid'],
             ['IsActive', 'isActive'],
-            ['ListID', 'listId'],
             ['ListName', 'listName'],
             ['SubscribedAt', 'subscribedAt'],
             ['UnsubscribedAt', 'unsubscribedAt'],

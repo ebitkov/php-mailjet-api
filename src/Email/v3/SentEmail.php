@@ -2,6 +2,8 @@
 
 namespace ebitkov\Mailjet\Email\v3;
 
+use ebitkov\Mailjet\Email\Resource;
+
 /**
  * Represents a send email.
  */

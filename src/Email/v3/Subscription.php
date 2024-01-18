@@ -4,6 +4,7 @@ namespace ebitkov\Mailjet\Email\v3;
 
 use DateTimeInterface;
 use ebitkov\Mailjet\ClientAware;
+use ebitkov\Mailjet\Email\Resource;
 use ebitkov\Mailjet\RequestAborted;
 use ebitkov\Mailjet\RequestFailed;
 

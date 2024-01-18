@@ -3,6 +3,7 @@
 namespace ebitkov\Mailjet\Email\v3;
 
 use DateTimeImmutable;
+use ebitkov\Mailjet\Email\Resource;
 
 /**
  * Contact List objects help you organize your contacts into lists.

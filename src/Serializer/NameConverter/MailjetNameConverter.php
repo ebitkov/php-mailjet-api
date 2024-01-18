@@ -2,12 +2,18 @@
 
 namespace ebitkov\Mailjet\Serializer\NameConverter;
 
-use ebitkov\Mailjet\Email\v3\Attachment;
-use ebitkov\Mailjet\Email\v3\Email;
 use Symfony\Component\Serializer\NameConverter\AdvancedNameConverterInterface;
 
 class MailjetNameConverter implements AdvancedNameConverterInterface
 {
+    private const SPECIAL_RULES = [
+        'Uuid' => 'UUID',
+        'uuid' => 'UUID',
+        'Id' => 'ID',
+        'id' => 'ID',
+        'html' => 'HTML'
+    ];
+
     /**
      * @param array<string, bool> $context
      */
@@ -19,32 +25,11 @@ class MailjetNameConverter implements AdvancedNameConverterInterface
     ): string {
         $default = new UpperCamelCaseToLowerCamelCaseNameConverter();
 
-        // custom rules for Send API v3 email
-        if ($class === Email::class) {
-            return match ($propertyName) {
-                'textPart' => 'Text-part',
-                'htmlPart' => 'Html-part',
-                'templateId' => 'Mj-TemplateID',
-                'templateLanguage' => 'Mj-TemplateLanguage',
-                'templateErrorReporting' => 'Mj-TemplateErrorReporting',
-                'templateErrorDeliver' => 'Mj-TemplateErrorDeliver',
-                'inlineAttachments' => 'Inline_attachments',
-                'prio' => 'Mj-prio',
-                'campaign' => 'Mj-campaign',
-                'deduplicateCampaign' => 'Mj-deduplicatecampaign',
-                'trackOpen' => 'Mj-trackopen',
-                'customId' => 'Mj-CustomID',
-                'eventPayload' => 'Mj-EventPayload',
-                default => $default->normalize($propertyName)
-            };
-        }
-
-        if ($class === Attachment::class) {
-            return match ($propertyName) {
-                'contentType' => 'Content-type',
-                default => $default->normalize($propertyName)
-            };
-        }
+        $propertyName = str_replace(
+            array_keys(self::SPECIAL_RULES),
+            array_values(self::SPECIAL_RULES),
+            $propertyName
+        );
 
         return $default->normalize($propertyName);
     }
@@ -58,6 +43,12 @@ class MailjetNameConverter implements AdvancedNameConverterInterface
         string $format = null,
         array $context = []
     ): string {
+        $propertyName = str_replace(
+            array_values(self::SPECIAL_RULES),
+            array_keys(self::SPECIAL_RULES),
+            $propertyName
+        );
+
         return (new UpperCamelCaseToLowerCamelCaseNameConverter())->denormalize($propertyName);
     }
 }

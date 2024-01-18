@@ -3,6 +3,9 @@ request:
     resource: [ 'listrecipient', '' ]
     args:
         filters: [ ]
+    
+    options:
+        version: v3
 
 response:
     status: 200

@@ -3,6 +3,7 @@
 namespace ebitkov\Mailjet\Email\v3;
 
 use DateTimeImmutable;
+use ebitkov\Mailjet\Email\Resource;
 
 final class Contact implements Resource
 {

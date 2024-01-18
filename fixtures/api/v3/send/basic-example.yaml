@@ -3,14 +3,15 @@ request:
     resource: [ "send", "" ]
     args:
         body:
+            To: '"Passenger 1" <passenger@mailjet.com>'
+            Subject: "Your email flight plan!"
             FromEmail: "pilot@mailjet.com"
             FromName: "Your Mailjet Pilot"
-            Subject: "Your email flight plan!"
             Text-part: "Dear passenger, welcome to Mailjet! May the delivery force be with you!"
             Html-part: "<h3>Dear passenger, welcome to Mailjet!</h3><br />May the delivery force be with you!"
-            Recipients:
-                -   Email: "passenger@mailjet.com"
-                    Name: "Passenger 1"
+    
+    options:
+        version: v3
 
 response:
     status: 201
