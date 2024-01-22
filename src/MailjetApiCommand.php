@@ -36,7 +36,6 @@ trait MailjetApiCommand
 
             $rows = [];
             foreach ($result as $item) {
-                dump($item);
                 $row = [];
                 foreach ($properties as $property) {
                     $getter = 'get' . ucfirst($property);
