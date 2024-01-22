@@ -16,8 +16,12 @@ final class Message
 
     private EmailAddress $sender;
 
+    /**
+     * @var EmailAddress[]
+     */
     #[Assert\NotBlank]
-    private EmailAddress $to;
+    #[Assert\All(new Assert\Type(EmailAddress::class))]
+    private array $to;
 
     /**
      * @var EmailAddress[]
@@ -117,14 +121,27 @@ final class Message
         return $this;
     }
 
-    public function getTo(): EmailAddress
+    /**
+     * @return EmailAddress[]
+     */
+    public function getTo(): array
     {
         return $this->to;
     }
 
-    public function setTo(EmailAddress $to): self
+    /**
+     * @param EmailAddress[] $to
+     * @return $this
+     */
+    public function setTo(array $to): self
     {
         $this->to = $to;
+        return $this;
+    }
+
+    public function addTo(EmailAddress $to): self
+    {
+        $this->to[] = $to;
         return $this;
     }
 

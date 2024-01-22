@@ -6,6 +6,7 @@ use ArrayObject;
 use ebitkov\Mailjet\Email\EmailList;
 use Exception;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -29,7 +30,16 @@ final class MailjetEmailNormalizer implements NormalizerInterface, NormalizerAwa
         string $format = null,
         array $context = []
     ): array|string|int|float|bool|ArrayObject|null {
-        $data = $this->normalizer->normalize($object, null, $context);
+        $data = $this->removeEmptyData(
+            $this->normalizer->normalize(
+                $object,
+                null,
+                [
+                    AbstractObjectNormalizer::SKIP_NULL_VALUES => true,
+                    AbstractObjectNormalizer::SKIP_UNINITIALIZED_VALUES => true,
+                ]
+            )
+        );
 
         if ('v3' == $context['mj_api_version']) {
             // special transformation for Send API v3
@@ -73,7 +83,7 @@ final class MailjetEmailNormalizer implements NormalizerInterface, NormalizerAwa
             }
 
             // To
-            $data['To'] = (string)$message->getTo();
+            $data['To'] = implode(', ', $message->getTo());
 
             // CC
             if (isset($data['Cc'])) {
@@ -168,6 +178,25 @@ final class MailjetEmailNormalizer implements NormalizerInterface, NormalizerAwa
                     and $value !== []
                     and $value !== "";
             });
+        }
+
+        return $data;
+    }
+
+    public function removeEmptyData(array $data): array
+    {
+        foreach ($data as $k => $v) {
+            if (
+                $v === null ||
+                $v === [] ||
+                $v === ''
+            ) {
+                unset($data[$k]);
+            } else {
+                if (is_array($v)) {
+                    $data[$k] = $this->removeEmptyData($v);
+                }
+            }
         }
 
         return $data;

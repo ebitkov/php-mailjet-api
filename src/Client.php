@@ -11,6 +11,7 @@ use ebitkov\Mailjet\Email\v3\Filter\ContactsListFilters;
 use ebitkov\Mailjet\Email\v3\Filter\SubscriptionFilters;
 use ebitkov\Mailjet\Email\v3\SentEmail;
 use ebitkov\Mailjet\Email\v3\Subscription;
+use ebitkov\Mailjet\Email\v3dot1\SentMessageList;
 use ebitkov\Mailjet\Serializer\NameConverter\MailjetNameConverter;
 use ebitkov\Mailjet\Serializer\Normalizer\MailjetEmailNormalizer;
 use GuzzleHttp\Exception\ConnectException;
@@ -26,6 +27,7 @@ use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
+use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
@@ -73,6 +75,7 @@ final class Client
         $this->serializer = new Serializer([
             new MailjetEmailNormalizer(),
             $objectNormalizer,
+            new ArrayDenormalizer(),
             new DateTimeNormalizer(),
         ]);
 
@@ -222,6 +225,10 @@ final class Client
         // Special rule for Send API
         if (isset($data['Sent'])) {
             $data = $data['Sent'];
+        } else {
+            if (isset($data['Messages'])) {
+                $data = $data['Messages'];
+            }
         }
 
         /** @var list<T> $resources */
@@ -386,7 +393,7 @@ final class Client
             ]
         );
 
-        return $this->serializeResult($response, SentEmail::class);
+        return $this->serializeResult($response, $this->isV3() ? SentEmail::class : SentMessageList::class);
     }
 
     public function validate(object $object): ConstraintViolationListInterface
@@ -423,6 +430,11 @@ final class Client
                 'mj_api_version' => $this->settings[self::API_VERSION]
             ]
         );
+    }
+
+    private function isV3(): bool
+    {
+        return $this->settings[self::API_VERSION] == 'v3';
     }
 
     public function getApiVersion(): string

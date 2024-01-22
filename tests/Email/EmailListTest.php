@@ -8,6 +8,11 @@ use ebitkov\Mailjet\Email\EmailList;
 use ebitkov\Mailjet\Email\InlineAttachment;
 use ebitkov\Mailjet\Email\Message;
 use ebitkov\Mailjet\Email\v3\SentEmail;
+use ebitkov\Mailjet\Email\v3dot1\MessageError;
+use ebitkov\Mailjet\Email\v3dot1\SentMessage;
+use ebitkov\Mailjet\Email\v3dot1\SentMessageList;
+use ebitkov\Mailjet\RequestAborted;
+use ebitkov\Mailjet\RequestFailed;
 use ebitkov\Mailjet\Result;
 use ebitkov\Mailjet\Tests\MailjetApiTestCase;
 use PHPUnit\Framework\MockObject\Exception;
@@ -37,22 +42,26 @@ class EmailListTest extends MailjetApiTestCase
 
     private static function getBasicEmailList(): EmailList
     {
+        $emailList = new EmailList();
+        $emailList->sandboxMode = true;
+
         $message = (new Message())
             ->setFrom(new EmailAddress('pilot@mailjet.com', 'Your Mailjet Pilot'))
-            ->setTo(new EmailAddress('passenger@mailjet.com', 'Passenger 1'))
+            ->addTo(new EmailAddress('passenger@mailjet.com', 'Passenger 1'))
             ->setSubject('Your email flight plan!')
             ->setTextPart('Dear passenger, welcome to Mailjet! May the delivery force be with you!')
             ->setHtmlPart('<h3>Dear passenger, welcome to Mailjet!</h3><br />May the delivery force be with you!');
 
-        return (new EmailList())
-            ->addMessage($message);
+        $emailList->addMessage($message);
+
+        return $emailList;
     }
 
     /**
      * @throws ExceptionInterface
      * @throws Exception
      */
-    public function testNormalizeV3(): void
+    public function testFullNormalizeV3(): void
     {
         $client = $this->getClient('v3');
         $emailList = $this->getFullEmailList();
@@ -108,7 +117,7 @@ class EmailListTest extends MailjetApiTestCase
         $message
             ->setFrom(new EmailAddress('pilot@mailjet.com', 'Your Mailjet Pilot'))
             ->setSender(new EmailAddress('pilot@mailjet.com', 'Your Mailjet Pilot'))
-            ->setTo(new EmailAddress('passenger@mailjet.com', 'Passenger 1'))
+            ->addTo(new EmailAddress('passenger@mailjet.com', 'Passenger 1'))
             ->addCc(new EmailAddress('passenger4@mailjet.com', 'Passenger 4'))
             ->addCc(new EmailAddress('passenger5@mailjet.com', 'Passenger 5'))
             ->addBcc(new EmailAddress('passenger6@mailjet.com', 'Passenger 6'))
@@ -149,7 +158,7 @@ class EmailListTest extends MailjetApiTestCase
         return $email;
     }
 
-    public function testNormalizeV3dot1(): void
+    public function testFullNormalizeV3dot1(): void
     {
         $client = $this->getClient();
         $this->assertSame('v3.1', $client->getApiVersion());
@@ -170,8 +179,10 @@ class EmailListTest extends MailjetApiTestCase
                         'Name' => 'Your Mailjet Pilot'
                     ],
                     'To' => [
-                        'Email' => 'passenger@mailjet.com',
-                        'Name' => 'Passenger 1'
+                        [
+                            'Email' => 'passenger@mailjet.com',
+                            'Name' => 'Passenger 1'
+                        ]
                     ],
                     'Cc' => [
                         [
@@ -233,5 +244,77 @@ class EmailListTest extends MailjetApiTestCase
         ];
 
         $this->assertEquals($expected, $client->normalize($emailList, 'send_api'));
+    }
+
+    /**
+     * @throws ExceptionInterface
+     * @throws Exception
+     */
+    public function testBasicNormalizationV3dot1(): void
+    {
+        $expected = [
+            'Messages' => [
+                [
+                    'From' => [
+                        'Email' => 'pilot@mailjet.com',
+                        'Name' => 'Your Mailjet Pilot'
+                    ],
+                    'Subject' => 'Your email flight plan!',
+                    'TextPart' => 'Dear passenger, welcome to Mailjet! May the delivery force be with you!',
+                    'HTMLPart' =>
+                        '<h3>Dear passenger, welcome to Mailjet!</h3><br />' .
+                        'May the delivery force be with you!',
+                    'To' => [
+                        [
+                            'Email' => 'passenger@mailjet.com',
+                            'Name' => 'Passenger 1'
+                        ]
+                    ],
+                ]
+            ],
+            'SandboxMode' => true,
+        ];
+
+        $client = $this->getClient();
+        $this->assertEquals($expected, $client->normalize($this->getBasicEmailList(), 'send_api'));
+    }
+
+    /**
+     * @throws Exception
+     * @throws RequestAborted
+     * @throws RequestFailed
+     * @throws ExceptionInterface
+     */
+    public function testSendV3dot1(): void
+    {
+        $client = $this->getClient();
+        $emailList = $this->getBasicEmailList();
+        $result = $client->sendEmail($emailList);
+
+        $this->assertSame(1, $result->count());
+
+        $sentEmailList = $result->first();
+        $this->assertInstanceOf(SentMessageList::class, $sentEmailList);
+
+        $this->assertSame('success', $sentEmailList->status);
+        $this->assertSame('CustomValue', $sentEmailList->customId);
+
+        $this->assertCount(1, $sentEmailList->errors);
+        $error = $sentEmailList->errors[0];
+
+        $this->assertInstanceOf(MessageError::class, $error);
+        $this->assertSame('1ab23cd4-e567-8901-2345-6789f0gh1i2j', $error->errorIdentifier);
+        $this->assertSame('send-0010', $error->errorCode);
+        $this->assertSame(400, $error->statusCode);
+        $this->assertSame('Template ID "123456789" doesn\'t exist for your account.', $error->errorMessage);
+
+        $this->assertCount(1, $sentEmailList->to);
+        $this->assertInstanceOf(SentMessage::class, $sentEmailList->to[0]);
+
+        $this->assertCount(1, $sentEmailList->cc);
+        $this->assertInstanceOf(SentMessage::class, $sentEmailList->cc[0]);
+
+        $this->assertCount(1, $sentEmailList->bcc);
+        $this->assertInstanceOf(SentMessage::class, $sentEmailList->bcc[0]);
     }
 }
