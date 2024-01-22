@@ -243,6 +243,8 @@ final class Client
             $resources
         );
 
+        $result->rawData = $data;
+
         if ($singleResult) {
             if ($result->count() > 0) {
                 return $result->first();

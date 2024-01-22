@@ -28,7 +28,11 @@ class MailjetApiContactsCommand extends Command
 
         $res = $client->getContacts($filter);
 
-        $this->resultToTable($io, $res);
+        if ($input->getOption('raw')) {
+            dump($res->rawData);
+        } else {
+            $this->resultToTable($io, $res);
+        }
 
         return Command::SUCCESS;
     }
@@ -41,6 +45,12 @@ class MailjetApiContactsCommand extends Command
                 null,
                 InputOption::VALUE_OPTIONAL,
                 'Retrieves only contacts that are part of this Contact List ID.'
+            )
+            ->addOption(
+                'raw',
+                'r',
+                InputOption::VALUE_NONE,
+                'If true, the raw JSON response is rendered.'
             );
     }
 }
