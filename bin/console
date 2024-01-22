@@ -1,0 +1,26 @@
+#!/usr/bin/env php
+<?php
+
+use Symfony\Component\Console\Application;
+use Symfony\Component\Finder\Finder;
+
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+
+$app = new Application();
+
+// find commands
+$finder = new Finder();
+$finder
+    ->in(dirname(__DIR__) . '/src/Command')
+    ->name('*.php');
+
+foreach ($finder as $file) {
+    $baseNamespace = 'ebitkov\\Mailjet\\Command\\';
+    $className = $file->getFilenameWithoutExtension();
+    $fqcn = $baseNamespace . $className;
+
+    $command = new $fqcn();
+    $app->add($command);
+}
+
+$app->run();
