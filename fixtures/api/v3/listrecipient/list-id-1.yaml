@@ -1,0 +1,24 @@
+request:
+    method: get
+    resource: [ 'listrecipient', '' ]
+    args:
+        filters:
+            ContactsList: 1
+    
+    options:
+        version: v3
+
+response:
+    status: 200
+    body:
+        Count: 1
+        Total: 1
+        Data:
+            -   "ContactID": 1
+                "ID": 1
+                "IsActive": true
+                "IsUnsubscribed": false
+                "ListID": 1
+                "ListName": "Testlist"
+                "SubscribedAt": "2020-07-30T09:21:20Z"
+                "UnsubscribedAt": ""
