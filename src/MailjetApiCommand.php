@@ -56,6 +56,10 @@ abstract class MailjetApiCommand extends Command
                 $properties[] = $property->getName();
             }
 
+            $properties = array_filter($properties, function($item) {
+                return $item !== 'client';
+            });
+
             $rows = [];
             foreach ($result as $item) {
                 $row = [];
