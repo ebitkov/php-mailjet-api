@@ -17,13 +17,96 @@ final class Subscription implements Resource
 {
     use ClientAware;
 
-    public bool $isUnsubscribed;
-    public int $contactId;
-    public int $id;
-    public int $listId;
-    public string $listName;
-    public DateTimeInterface $subscribedAt;
-    public DateTimeInterface $unsubscribedAt;
+    private bool $isUnsubscribed;
+    private int $contactId;
+    private int $id;
+    private int $listId;
+    private string $listName;
+    private ?DateTimeInterface $subscribedAt;
+    private ?DateTimeInterface $unsubscribedAt;
+
+
+    public function isUnsubscribed(): bool
+    {
+        return $this->isUnsubscribed;
+    }
+
+    public function setIsUnsubscribed(bool $isUnsubscribed): self
+    {
+        $this->isUnsubscribed = $isUnsubscribed;
+        return $this;
+    }
+
+    public function getContactId(): int
+    {
+        return $this->contactId;
+    }
+
+    public function setContactId(int $contactId): self
+    {
+        $this->contactId = $contactId;
+        return $this;
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    public function getListId(): int
+    {
+        return $this->listId;
+    }
+
+    public function setListId(int $listId): self
+    {
+        $this->listId = $listId;
+        return $this;
+    }
+
+    public function getListName(): string
+    {
+        return $this->listName;
+    }
+
+    public function setListName(string $listName): self
+    {
+        $this->listName = $listName;
+        return $this;
+    }
+
+    public function getSubscribedAt(): ?DateTimeInterface
+    {
+        return $this->subscribedAt;
+    }
+
+    public function setSubscribedAt(?DateTimeInterface $subscribedAt): self
+    {
+        $this->subscribedAt = $subscribedAt;
+        return $this;
+    }
+
+    public function getUnsubscribedAt(): ?DateTimeInterface
+    {
+        return $this->unsubscribedAt;
+    }
+
+    public function setUnsubscribedAt(DateTimeInterface|string|null $unsubscribedAt): self
+    {
+        if ('' === $unsubscribedAt) {
+            $this->unsubscribedAt = null;
+        } else {
+            $this->unsubscribedAt = $unsubscribedAt;
+        }
+        return $this;
+    }
+
 
     /**
      * @throws RequestFailed
