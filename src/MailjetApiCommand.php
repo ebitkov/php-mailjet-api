@@ -2,12 +2,21 @@
 
 namespace ebitkov\Mailjet;
 
+use ReflectionException;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Dotenv\Dotenv;
 
-trait MailjetApiCommand
+abstract class MailjetApiCommand extends Command
 {
-    private function getClient(): Client
+    protected InputInterface $input;
+    protected OutputInterface $output;
+
+
+    protected function getClient(): Client
     {
         (new Dotenv())->load(dirname(__DIR__) . '/.env');
 
@@ -19,11 +28,24 @@ trait MailjetApiCommand
         return new Client($mailjet);
     }
 
-    /**
-     * @throws \ReflectionException
-     */
-    private function resultToTable(SymfonyStyle $io, Result $result): void
+    protected function displayResult(Result $result)
     {
+        if ($this->input->getOption('raw')) {
+            dump($result->rawData);
+        } else {
+            $this->resultToTable($result);
+        }
+
+        return Command::SUCCESS;
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    protected function resultToTable(Result $result): void
+    {
+        $io = new SymfonyStyle($this->input, $this->output);
+
         if ($result->count()) {
             // get headers
             $ref = new \ReflectionClass($result->first());
@@ -78,5 +100,16 @@ trait MailjetApiCommand
         } else {
             $io->warning('Empty result received');
         }
+    }
+
+    protected function configure(): void
+    {
+        $this
+            ->addOption(
+                'raw',
+                'r',
+                InputOption::VALUE_NONE,
+                'If true, the raw JSON response is rendered.'
+            );
     }
 }
