@@ -10,14 +10,23 @@ request:
 response:
     status: 200
     body:
-        Count: 1
+        Count: 2
+        Total: 2
         Data:
-            -   IsUnsubscribed: true
-                ContactID: 987654321
-                ID: 1234567890
-                IsActive: true
-                ListID: 123456
-                ListName: "abcdef123"
-                SubscribedAt: "2018-01-01T00:00:00"
-                UnsubscribedAt: "2018-01-01T00:00:00"
-        Total: 1
+            -   "ContactID": 1
+                "ID": 1
+                "IsActive": true
+                "IsUnsubscribed": false
+                "ListID": 1
+                "ListName": "Testlist"
+                "SubscribedAt": "2020-07-30T09:21:20Z"
+                "UnsubscribedAt": ""
+
+            -   "ContactID": 2
+                "ID": 1
+                "IsActive": true
+                "IsUnsubscribed": true
+                "ListID": 3
+                "ListName": "Deleted List"
+                "SubscribedAt": "2023-04-21T13:43:02Z"
+                "UnsubscribedAt": "2024-01-05T23:00:16Z"

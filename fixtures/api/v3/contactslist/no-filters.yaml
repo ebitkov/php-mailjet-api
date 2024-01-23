@@ -11,11 +11,26 @@ request:
 response:
     status: 200
     body:
-        Count: 1
-        Total: 1
+        Count: 3
+        Total: 3
         Data:
-            -   Name: "my_contactslist"
-                Address: "abcdef123"
-                CreatedAt: "2018-01-01T00:00:00"
-                ID: 123456
-                SubscriberCount: 111
+            -   Address: "abcdefg12"
+                CreatedAt: "2020-03-30T09:12:34Z"
+                ID: 1
+                IsDeleted: false
+                Name: "Testlist"
+                SubscriberCount: 1
+                
+            -   Address: "abc123456"
+                CreatedAt: "2020-03-30T09:12:34Z"
+                ID: 2
+                IsDeleted: false
+                Name: "Empty List"
+                SubscriberCount: 0
+                
+            -   Address: "123456fgh"
+                CreatedAt: "2020-03-30T09:12:34Z"
+                ID: 3
+                IsDeleted: true
+                Name: "Deleted List"
+                SubscriberCount: 1

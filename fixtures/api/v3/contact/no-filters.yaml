@@ -1,6 +1,6 @@
 request:
     method: get
-    resource: 
+    resource:
         0: 'contact'
         1: ''
         normalizer: 'Mailjet\Normalizer\ContactNormalizer'
@@ -14,19 +14,146 @@ request:
 response:
     status: 200
     body:
-        Count: 1
-        Total: 1
+        Count: 10
+        Total: 10
         Data:
-            -   IsExcludedFromCampaigns: true
-                Name: "New Contact"
-                CreatedAt: "2018-01-01T00:00:00"
-                DeliveredCount: 10
-                Email: "passenger@mailjet.com"
-                ExclusionFromCampaignUpdatedAt: "2018-01-01T00:00:00"
-                ID: 123456789
-                IsOptInPending: false
-                IsSpamComplaining: false
-                LastActivityAt: "2018-01-01T00:00:00"
-                LastUpdateAt: "2018-01-01T00:00:00"
-                UnsubscribedAt: "2018-01-01T00:00:00"
-                UnsubscribedBy: "2018-01-01T00:00:00"
+            -   "CreatedAt": "2018-02-15T15:52:47Z"
+                "DeliveredCount": 0
+                "Email": "passenger@mailjet.com"
+                "ExclusionFromCampaignsUpdatedAt": ""
+                "ID": 1
+                "IsExcludedFromCampaigns": false
+                "IsOptInPending": false
+                "IsSpamComplaining": false
+                "LastActivityAt": "2020-07-30T09:21:20Z"
+                "LastUpdateAt": "2020-07-30T09:21:20Z"
+                "Name": ""
+                "UnsubscribedAt": ""
+                "UnsubscribedBy": ""
+            
+            -   "CreatedAt": "2018-02-15T17:00:39Z"
+                "DeliveredCount": 0
+                "Email": "passenger@mailjet.com"
+                "ExclusionFromCampaignsUpdatedAt": ""
+                "ID": 2
+                "IsExcludedFromCampaigns": false
+                "IsOptInPending": false
+                "IsSpamComplaining": false
+                "LastActivityAt": "2023-04-21T13:43:02Z"
+                "LastUpdateAt": "2023-04-21T13:43:02Z"
+                "Name": ""
+                "UnsubscribedAt": ""
+                "UnsubscribedBy": ""
+
+            -   "CreatedAt": "2018-02-16T08:16:16Z"
+                "DeliveredCount": 0
+                "Email": "passenger@mailjet.com"
+                "ExclusionFromCampaignsUpdatedAt": ""
+                "ID": 3
+                "IsExcludedFromCampaigns": false
+                "IsOptInPending": false
+                "IsSpamComplaining": false
+                "LastActivityAt": "2018-02-16T08:16:16Z"
+                "LastUpdateAt": "2018-02-16T08:16:16Z"
+                "Name": ""
+                "UnsubscribedAt": ""
+                "UnsubscribedBy": ""
+
+            -   "CreatedAt": "2018-02-16T09:00:37Z"
+                "DeliveredCount": 0
+                "Email": "passenger@mailjet.com"
+                "ExclusionFromCampaignsUpdatedAt": ""
+                "ID": 4
+                "IsExcludedFromCampaigns": false
+                "IsOptInPending": false
+                "IsSpamComplaining": false
+                "LastActivityAt": "2018-02-16T09:00:37Z"
+                "LastUpdateAt": "2018-02-16T09:00:37Z"
+                "Name": ""
+                "UnsubscribedAt": ""
+                "UnsubscribedBy": ""
+
+            -   "CreatedAt": "2018-02-18T01:56:10Z"
+                "DeliveredCount": 0
+                "Email": "passenger@mailjet.com"
+                "ExclusionFromCampaignsUpdatedAt": ""
+                "ID": 5
+                "IsExcludedFromCampaigns": false
+                "IsOptInPending": false
+                "IsSpamComplaining": false
+                "LastActivityAt": "2018-02-18T01:56:10Z"
+                "LastUpdateAt": "2018-02-18T01:56:10Z"
+                "Name": ""
+                "UnsubscribedAt": ""
+                "UnsubscribedBy": ""
+
+            -   "CreatedAt": "2018-02-28T15:12:31Z"
+                "DeliveredCount": 0
+                "Email": "passenger@mailjet.com"
+                "ExclusionFromCampaignsUpdatedAt": ""
+                "ID": 6
+                "IsExcludedFromCampaigns": false
+                "IsOptInPending": false
+                "IsSpamComplaining": false
+                "LastActivityAt": "2018-02-28T15:12:31Z"
+                "LastUpdateAt": "2018-02-28T15:12:31Z"
+                "Name": ""
+                "UnsubscribedAt": ""
+                "UnsubscribedBy": ""
+
+            -   "CreatedAt": "2018-02-28T15:12:31Z"
+                "DeliveredCount": 0
+                "Email": "passenger@mailjet.com"
+                "ExclusionFromCampaignsUpdatedAt": ""
+                "ID": 7
+                "IsExcludedFromCampaigns": false
+                "IsOptInPending": false
+                "IsSpamComplaining": false
+                "LastActivityAt": "2018-02-28T15:12:31Z"
+                "LastUpdateAt": "2018-02-28T15:12:31Z"
+                "Name": ""
+                "UnsubscribedAt": ""
+                "UnsubscribedBy": ""
+
+            -   "CreatedAt": "2018-02-28T15:12:31Z"
+                "DeliveredCount": 0
+                "Email": "passenger@mailjet.com"
+                "ExclusionFromCampaignsUpdatedAt": ""
+                "ID": 8
+                "IsExcludedFromCampaigns": false
+                "IsOptInPending": false
+                "IsSpamComplaining": false
+                "LastActivityAt": "2018-02-28T15:12:31Z"
+                "LastUpdateAt": "2018-02-28T15:12:31Z"
+                "Name": ""
+                "UnsubscribedAt": ""
+                "UnsubscribedBy": ""
+
+            -   "CreatedAt": "2018-02-28T15:12:31Z"
+                "DeliveredCount": 0
+                "Email": "passenger@mailjet.com"
+                "ExclusionFromCampaignsUpdatedAt": ""
+                "ID": 9
+                "IsExcludedFromCampaigns": false
+                "IsOptInPending": false
+                "IsSpamComplaining": false
+                "LastActivityAt": "2018-02-28T15:12:31Z"
+                "LastUpdateAt": "2018-02-28T15:12:31Z"
+                "Name": ""
+                "UnsubscribedAt": ""
+                "UnsubscribedBy": ""
+
+            -   "CreatedAt": "2018-02-28T15:12:31Z"
+                "DeliveredCount": 0
+                "Email": "passenger@mailjet.com"
+                "ExclusionFromCampaignsUpdatedAt": ""
+                "ID": 10
+                "IsExcludedFromCampaigns": false
+                "IsOptInPending": false
+                "IsSpamComplaining": false
+                "LastActivityAt": "2018-02-28T15:12:31Z"
+                "LastUpdateAt": "2018-02-28T15:12:31Z"
+                "Name": ""
+                "UnsubscribedAt": ""
+                "UnsubscribedBy": ""
+                

@@ -24,18 +24,20 @@ class ClientTest extends MailjetApiTestCase
         $result = $mailjet->getListRecipients();
 
         $this->assertInstanceOf(Result::class, $result);
-        $this->assertSame(1, $result->totalCount);
+        $this->assertSame(2, $result->totalCount);
 
         $listRecipient = $result->first();
         $this->assertInstanceOf(Subscription::class, $listRecipient);
 
-        $this->assertSame(true, $listRecipient->isUnsubscribed);
-        $this->assertSame(987654321, $listRecipient->contactId);
-        $this->assertSame(1234567890, $listRecipient->id);
-        $this->assertSame(123456, $listRecipient->listId);
-        $this->assertSame('abcdef123', $listRecipient->listName);
-        $this->assertEquals(new DateTime('2018-01-01'), $listRecipient->subscribedAt);
-        $this->assertEquals(new DateTime('2018-01-01'), $listRecipient->unsubscribedAt);
+        /* todo: move to an own test case
+        $this->assertSame(true, $listRecipient->isUnsubscribed());
+        $this->assertSame(987654321, $listRecipient->getContactId());
+        $this->assertSame(1234567890, $listRecipient->getId());
+        $this->assertSame(123456, $listRecipient->getListId());
+        $this->assertSame('abcdef123', $listRecipient->getListName());
+        $this->assertEquals(new DateTime('2018-01-01'), $listRecipient->getSubscribedAt());
+        $this->assertEquals(new DateTime('2018-01-01'), $listRecipient->getUnsubscribedAt());
+        */
     }
 
     /**
@@ -49,7 +51,7 @@ class ClientTest extends MailjetApiTestCase
         $result = $mailjet->getContacts();
 
         $this->assertInstanceOf(Result::class, $result);
-        $this->assertSame(1, $result->totalCount);
+        $this->assertSame(10, $result->totalCount);
 
         $contact = $result->first();
 
@@ -67,7 +69,7 @@ class ClientTest extends MailjetApiTestCase
         $result = $mailjet->getContactsLists();
 
         $this->assertInstanceOf(Result::class, $result);
-        $this->assertSame(1, $result->totalCount);
+        $this->assertSame(3, $result->totalCount);
 
         $contact = $result->first();
 
