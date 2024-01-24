@@ -3,6 +3,12 @@
 This project builds upon the official [Mailjet PHP Wrapper](https://github.com/mailjet/mailjet-apiv3-php) and extends
 its functionality.
 
+## Installation
+
+```shell
+composer require ebitkov/php-mailjet-api 
+```
+
 ## Features
 
 > This project is currently in development. Features might be not implemented yet or highly experimental.
