@@ -8,6 +8,7 @@ use ebitkov\Mailjet\Email\Resource;
 use ebitkov\Mailjet\RequestAborted;
 use ebitkov\Mailjet\RequestFailed;
 use ebitkov\Mailjet\Result;
+use Mailjet\Resources;
 
 /**
  * Contact List objects help you organize your contacts into lists.
@@ -39,6 +40,48 @@ final class ContactsList implements Resource
         return $this->client->getListRecipients([
             'ContactsList' => $this->id
         ]);
+    }
+
+    /**
+     * Unsubscribes all its contacts from the list.
+     * Requires additional requests to get all subscribed contacts.
+     *
+     * @throws RequestFailed
+     * @throws RequestAborted
+     */
+    public function unsubscribeAllContacts(): int
+    {
+        $subscriber = $this->getSubscribedContacts();
+
+        $contacts = [];
+        foreach ($subscriber as $item) {
+            $contacts[] = ['Email' => $item->getEmail()];
+        }
+
+        if (!empty($contacts)) {
+            // send request
+            $result = $this->client->post(
+                Resources::$ContactManagemanycontacts,
+                [
+                    'body' => [
+                        'Contacts' => $contacts,
+                        'ContactsLists' => [
+                            [
+                                'ListID' => $this->id,
+                                'Action' => 'unsub'
+                            ]
+                        ]
+                    ]
+                ],
+                [
+                    'version' => 'v3'
+                ]
+            );
+
+            return $result->success() ? 1 : 0;
+        }
+
+        return -1;
     }
 
     /**

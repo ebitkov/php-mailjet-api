@@ -33,4 +33,14 @@ class ContactsListTest extends MailjetApiTestCase
         $this->assertSame(1, $contacts->count());
         $this->assertInstanceOf(Contact::class, $contacts->first());
     }
+
+    public function testUnsubscribeAllContacts(): void
+    {
+        $list = $this->getContactsList();
+
+        $this->assertSame(
+            1,
+            $list->unsubscribeAllContacts()
+        );
+    }
 }
