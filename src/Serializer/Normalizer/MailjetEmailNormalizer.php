@@ -105,6 +105,7 @@ final class MailjetEmailNormalizer implements NormalizerInterface, NormalizerAwa
                 'Priority' => 'Mj-prio',
                 'CustomCampaign' => 'Mj-campaign',
                 'CustomID' => 'Mj-CustomID',
+                'Variables' => 'Vars'
             ];
 
             foreach ($map as $k => $v) {

@@ -99,6 +99,9 @@ class EmailListTest extends MailjetApiTestCase
             'Mj-deduplicatecampaign' => 0,
             'Mj-trackopen' => 0,
             'Mj-CustomID' => '123456',
+            'Vars' => [
+                'foo' => 'bar'
+            ]
         ];
 
         $this->assertEquals($expected, $client->normalize($emailList, 'send_api'));
@@ -152,6 +155,10 @@ class EmailListTest extends MailjetApiTestCase
             ->setTrackOpens('account_default')
             ->setTrackClicks('account_default')
             ->setCustomId('123456');
+
+        $message->setVariables([
+            'foo' => 'bar'
+        ]);
 
         $email->addMessage($message);
 
@@ -239,6 +246,9 @@ class EmailListTest extends MailjetApiTestCase
                     'TrackOpens' => 'account_default',
                     'TrackClicks' => 'account_default',
                     'CustomID' => '123456',
+                    'Variables' => [
+                        'foo' => 'bar'
+                    ]
                 ]
             ]
         ];
