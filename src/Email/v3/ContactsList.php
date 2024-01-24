@@ -98,4 +98,13 @@ final class ContactsList implements Resource
             'ContactsList' => $this->id
         ]);
     }
+
+    /**
+     * @throws RequestFailed
+     * @throws RequestAborted
+     */
+    public function persist(): void
+    {
+        $this->client->persistContactsList($this);
+    }
 }

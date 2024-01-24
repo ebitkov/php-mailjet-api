@@ -37,12 +37,10 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class Client
 {
-    public ?Response $lastResponse = null;
-
     public const API_VERSION = 'version';
     public const MAX_RETRIES = 'max_retries';
     public const SECONDS_TO_WAIT_ON_TOO_MANY_REQUESTS = 'seconds_to_wait_on_too_many_requests';
-
+    public ?Response $lastResponse = null;
     private Serializer $serializer;
     private ValidatorInterface $validator;
 
@@ -216,13 +214,20 @@ final class Client
     /**
      * Serializes successful responses into objects.
      *
+     * @param bool $singleResult Should the result stripped to a single object? Will always take the first object!
+     * @param ?object $objectToPopulate An object to populate. Will force the return of a single result.
+     *
      * @template T of Resource
      *
      * @param class-string<T> $type
      * @return T|Result<T>|null
      */
-    public function serializeResult(Response $response, string $type, bool $singleResult = false): Resource|Result|null
-    {
+    public function serializeResult(
+        Response $response,
+        string $type,
+        bool $singleResult = false,
+        object $objectToPopulate = null
+    ): Resource|Result|null {
         $data = $response->getData();
 
         // Special rule for Send API
@@ -237,7 +242,29 @@ final class Client
         /** @var list<T> $resources */
         $resources = [];
         foreach ($data as $item) {
-            $resources[] = $this->serialize($item, $type);
+            // configure context
+            $context = [];
+            if ($objectToPopulate) {
+                $context[AbstractNormalizer::OBJECT_TO_POPULATE] = $objectToPopulate;
+            }
+
+            // serialize
+            $resource = $this->serialize($item, $type, $context);
+
+            // return single result, if requested
+            if ($singleResult || $objectToPopulate) {
+                return $resource;
+            }
+
+            // collect serialized resources
+            $resources[] = $resource;
+        }
+
+        /**
+         * Empty result
+         */
+        if ($singleResult) {
+            return null;
         }
 
         /** @var Result<T> $result */
@@ -245,13 +272,6 @@ final class Client
             $response->getTotal(),
             $resources
         );
-
-        if ($singleResult) {
-            if ($result->count() > 0) {
-                return $result->first();
-            }
-            return null;
-        }
 
         return $result;
     }
@@ -494,7 +514,7 @@ final class Client
      * @throws RequestAborted
      * @throws RequestFailed
      */
-    public function getContactsListsByContact(int $contactId):Result
+    public function getContactsListsByContact(int $contactId): Result
     {
         $response = $this->get(
             Resources::$ContactGetcontactslists,
@@ -507,5 +527,36 @@ final class Client
         );
 
         return $this->serializeResult($response, Subscription::class);
+    }
+
+    /**
+     * Creates or updates a contacts list.
+     * Auto-selects the corresponding method (POST or UPDATE).
+     *
+     * @throws RequestAborted
+     * @throws RequestFailed
+     */
+    public function persistContactsList(ContactsList $list): void
+    {
+        # todo: Support UPDATE
+
+        $response = $this->post(
+            Resources::$Contactslist,
+            [
+                'body' => [
+                    'Name' => $list->name,
+                    'IsDeleted' => $list->isDeleted,
+                ]
+            ],
+            [
+                'version' => 'v3'
+            ]
+        );
+
+        $this->serializeResult(
+            $response,
+            ContactsList::class,
+            objectToPopulate: $list
+        );
     }
 }
