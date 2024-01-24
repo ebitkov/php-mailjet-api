@@ -1,0 +1,25 @@
+request:
+    method: post
+    resource: [ 'contactslist', '' ]
+    
+    args:
+        body:
+            Name: 'foo bar'
+            IsDeleted: false
+    
+    options:
+        version: v3
+
+response:
+    status: 201
+    body:
+        Count: 1
+        Total: 1
+        Data:
+            -   Name: 'foo bar'
+                Address: 'asdefg987'
+                CreatedAt: '2018-01-01T00:00:00'
+                ID: 4
+                SubscriberCount: 0
+                IsDeleted: false
+        

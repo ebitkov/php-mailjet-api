@@ -545,7 +545,7 @@ final class Client
             [
                 'body' => [
                     'Name' => $list->name,
-                    'IsDeleted' => $list->isDeleted,
+                    'IsDeleted' => $list->isDeleted ?? false,
                 ]
             ],
             [

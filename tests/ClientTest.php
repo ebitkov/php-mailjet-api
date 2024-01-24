@@ -83,4 +83,17 @@ class ClientTest extends MailjetApiTestCase
         $this->assertSame(1, $result->getId());
         $this->assertCount(1, $result->getProperties());
     }
+
+    public function testPersistContactsList(): void
+    {
+        $client = $this->getClient();
+        $list = new ContactsList();
+        $list->name = 'foo bar';
+
+        $client->persistContactsList($list);
+
+        $this->assertSame(4, $list->id);
+        $this->assertSame('foo bar', $list->name);
+        $this->assertSame(false, $list->isDeleted);
+    }
 }
