@@ -48,6 +48,7 @@ abstract class MailjetApiTestCase extends TestCase
 
                 $response->method('success')->willReturn(2 == floor($responseData['status'] / 100));
                 $response->method('getStatus')->willReturn($responseData['status']);
+                $response->method('getCount')->willReturn($responseData['body']['Count'] ?? null);
                 $response->method('getTotal')->willReturn($responseData['body']['Total'] ?? null);
                 $response->method('getBody')->willReturn($responseData['body']);
                 $response->method('getData')->willReturn($responseData['body']['Data'] ?? $responseData['body']);

@@ -10,8 +10,6 @@ use Doctrine\Common\Collections\ArrayCollection;
  */
 final class Result extends ArrayCollection
 {
-    public array $rawData;
-
     /**
      * @param list<T> $elements
      */

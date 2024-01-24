@@ -3,21 +3,43 @@
 namespace ebitkov\Mailjet\Email\v3;
 
 use DateTimeImmutable;
+use ebitkov\Mailjet\ClientAware;
 use ebitkov\Mailjet\Email\Resource;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 final class Contact implements Resource
 {
-    private bool $isExcludedFromCampaign;
-    private string $name;
-    private DateTimeImmutable $createdAt;
-    private int $deliveredCount;
-    private string $email;
-    private DateTimeImmutable $exclusionFromCampaignsUpdatedAt;
-    private int $id;
-    private bool $isOptInPending;
-    private bool $isSpamComplaining;
-    private DateTimeImmutable $lastActivityAt;
-    private DateTimeImmutable $lastUpdateAt;
+    use ClientAware;
+
+
+    private bool $propertiesFetched = false;
+
+
+    private ?bool $isExcludedFromCampaign = null;
+
+    private ?string $name = null;
+
+    private ?DateTimeImmutable $createdAt = null;
+
+    private ?int $deliveredCount = null;
+
+    private ?string $email = null;
+
+    private ?DateTimeImmutable $exclusionFromCampaignsUpdatedAt = null;
+
+    private ?int $id = null;
+
+    private ?bool $isOptInPending = null;
+
+    private ?bool $isSpamComplaining = null;
+
+    private ?DateTimeImmutable $lastActivityAt = null;
+
+    private ?DateTimeImmutable $lastUpdateAt = null;
+
+    #[Groups('properties')]
+    private array $properties = [];
+
 
     public function isExcludedFromCampaign(): bool
     {
@@ -30,7 +52,7 @@ final class Contact implements Resource
         return $this;
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -41,7 +63,7 @@ final class Contact implements Resource
         return $this;
     }
 
-    public function getCreatedAt(): DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
@@ -52,7 +74,7 @@ final class Contact implements Resource
         return $this;
     }
 
-    public function getDeliveredCount(): int
+    public function getDeliveredCount(): ?int
     {
         return $this->deliveredCount;
     }
@@ -63,7 +85,7 @@ final class Contact implements Resource
         return $this;
     }
 
-    public function getEmail(): string
+    public function getEmail(): ?string
     {
         return $this->email;
     }
@@ -74,7 +96,7 @@ final class Contact implements Resource
         return $this;
     }
 
-    public function getExclusionFromCampaignsUpdatedAt(): DateTimeImmutable
+    public function getExclusionFromCampaignsUpdatedAt(): ?DateTimeImmutable
     {
         return $this->exclusionFromCampaignsUpdatedAt;
     }
@@ -96,7 +118,7 @@ final class Contact implements Resource
         return $this;
     }
 
-    public function isOptInPending(): bool
+    public function isOptInPending(): ?bool
     {
         return $this->isOptInPending;
     }
@@ -107,7 +129,7 @@ final class Contact implements Resource
         return $this;
     }
 
-    public function isSpamComplaining(): bool
+    public function isSpamComplaining(): ?bool
     {
         return $this->isSpamComplaining;
     }
@@ -118,7 +140,7 @@ final class Contact implements Resource
         return $this;
     }
 
-    public function getLastActivityAt(): DateTimeImmutable
+    public function getLastActivityAt(): ?DateTimeImmutable
     {
         return $this->lastActivityAt;
     }
@@ -129,7 +151,7 @@ final class Contact implements Resource
         return $this;
     }
 
-    public function getLastUpdateAt(): DateTimeImmutable
+    public function getLastUpdateAt(): ?DateTimeImmutable
     {
         return $this->lastUpdateAt;
     }
@@ -140,6 +162,26 @@ final class Contact implements Resource
         return $this;
     }
 
+    public function getProperties(): array
+    {
+        if (!$this->propertiesFetched) {
+            $this->fetchProperties();
+        }
+
+        return $this->properties;
+    }
+
+    public function setProperties(array $properties): self
+    {
+        $this->properties = $properties;
+        return $this;
+    }
+
+    public function fetchProperties(): self
+    {
+        $this->client?->getContactDataById($this->getId(), $this);
+        return $this;
+    }
+
     # todo: getSubscribedLists() (/contact/{contact_ID}/getcontactslists)
-    # todo: getProperties()
 }

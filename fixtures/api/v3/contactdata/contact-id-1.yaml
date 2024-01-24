@@ -1,0 +1,21 @@
+request:
+    method: get
+    resource: [ 'contactdata', '' ]
+    
+    args:
+        id: 1
+    
+    options:
+        version: v3
+
+response:
+    status: 200
+    body:
+        Count: 1
+        Total: 1
+        Data:
+            -   Data:
+                    -   Name: property_name
+                        Value: "some value"
+                ContactID: 1
+                ID: 1

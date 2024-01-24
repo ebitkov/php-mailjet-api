@@ -37,6 +37,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class Client
 {
+    public ?Response $lastResponse = null;
+
     public const API_VERSION = 'version';
     public const MAX_RETRIES = 'max_retries';
     public const SECONDS_TO_WAIT_ON_TOO_MANY_REQUESTS = 'seconds_to_wait_on_too_many_requests';
@@ -183,6 +185,7 @@ final class Client
             try {
                 /** @var Response $response */
                 $response = $this->mailjet->$method($resource, $args, $options);
+                $this->lastResponse = $response;
 
                 if ($response->success()) {
                     return $response;
@@ -243,8 +246,6 @@ final class Client
             $resources
         );
 
-        $result->rawData = $data;
-
         if ($singleResult) {
             if ($result->count() > 0) {
                 return $result->first();
@@ -263,9 +264,9 @@ final class Client
      *
      * @return T
      */
-    public function serialize(array $data, string $type): Resource
+    public function serialize(array $data, string $type, array $context = []): Resource
     {
-        $object = $this->serializer->denormalize($data, $type, 'object');
+        $object = $this->serializer->denormalize($data, $type, 'object', $context);
 
         if (in_array(ClientAware::class, class_uses($object))) {
             $object->setClient($this);
@@ -442,5 +443,43 @@ final class Client
     public function getApiVersion(): string
     {
         return $this->settings[self::API_VERSION];
+    }
+
+    /**
+     * Get the contact property values relating to a specific contact.
+     * @see https://dev.mailjet.com/email/reference/contacts/contact-properties#v3_get_contactdata_contact_ID
+     *
+     * @param int $contactId Unique numeric ID for the contact, whose properties you want to retrieve.
+     *
+     * @throws RequestAborted
+     * @throws RequestFailed
+     */
+    public function getContactDataById(int $contactId, Contact $contact = new Contact()): Contact
+    {
+        $response = $this->get(
+            Resources::$Contactdata,
+            [
+                'id' => $contactId
+            ],
+            [
+                'version' => 'v3', // contactdata/ only supports v3
+            ]
+        );
+
+        if ($response->getCount() == 1) {
+            // set contact id
+            $contact->setId($contactId);
+
+            // transform key-value pairs from result to assoc array
+            $properties = [];
+            foreach ($response->getData()[0]['Data'] as $property) {
+                $properties[$property['Name']] = $property['Value'];
+            }
+
+            // set properties
+            $contact->setProperties($properties);
+        }
+
+        return $contact;
     }
 }

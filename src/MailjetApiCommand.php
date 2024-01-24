@@ -15,23 +15,29 @@ abstract class MailjetApiCommand extends Command
     protected InputInterface $input;
     protected OutputInterface $output;
 
+    protected ?Client $client = null;
+
 
     protected function getClient(): Client
     {
-        (new Dotenv())->load(dirname(__DIR__) . '/.env');
+        if (!$this->client) {
+            (new Dotenv())->load(dirname(__DIR__) . '/.env');
 
-        $mailjet = new \Mailjet\Client(
-            $_ENV['MAILJET_API_KEY'],
-            $_ENV['MAILJET_API_SECRET']
-        );
+            $mailjet = new \Mailjet\Client(
+                $_ENV['MAILJET_API_KEY'],
+                $_ENV['MAILJET_API_SECRET']
+            );
 
-        return new Client($mailjet);
+            $this->client = new Client($mailjet);
+        }
+
+        return $this->client;
     }
 
     protected function displayResult(Result $result)
     {
         if ($this->input->getOption('raw')) {
-            dump($result->rawData);
+            dump($this->client->lastResponse->getData());
         } else {
             $this->resultToTable($result);
         }
@@ -56,10 +62,6 @@ abstract class MailjetApiCommand extends Command
                 $properties[] = $property->getName();
             }
 
-            $properties = array_filter($properties, function($item) {
-                return $item !== 'client';
-            });
-
             $rows = [];
             foreach ($result as $item) {
                 $row = [];
@@ -71,31 +73,37 @@ abstract class MailjetApiCommand extends Command
                         if (method_exists($item, $property)) {
                             $val = $item->$property();
                         } else {
-                            $val = $item->$property;
+                            # todo: Remove not accessible properties completely from result table
+                            # they are mostly internal and therefor not relevant in this context
+                            $val = $item->$property ?? '< not accessible >';
                         }
                     }
 
-                    if ($val instanceof \DateTimeInterface) {
-                        $val = $val->format(\DateTimeInterface::RFC3339);
-                    }
+                        if ($val instanceof \DateTimeInterface) {
+                            $val = $val->format(\DateTimeInterface::RFC3339);
+                        }
 
-                    if (null === $val) {
-                        $val = '< null >';
-                    }
+                        if (is_array($val)) {
+                            $val = json_encode($val);
+                        }
 
-                    if (true === $val) {
-                        $val = '< true >';
-                    }
+                        if (null === $val) {
+                            $val = '< null >';
+                        }
 
-                    if (false === $val) {
-                        $val = '< false >';
-                    }
+                        if (true === $val) {
+                            $val = '< true >';
+                        }
 
-                    if ('' === $val) {
-                        $val = '< empty string >';
-                    }
+                        if (false === $val) {
+                            $val = '< false >';
+                        }
 
-                    $row[] = $val;
+                        if ('' === $val) {
+                            $val = '< empty string >';
+                        }
+
+                        $row[] = $val;
                 }
                 $rows[] = $row;
             }
