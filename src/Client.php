@@ -4,11 +4,14 @@ namespace ebitkov\Mailjet;
 
 use ebitkov\Mailjet\Email\EmailList;
 use ebitkov\Mailjet\Email\Resource;
+use ebitkov\Mailjet\Email\v3\Body\BulkManageContactsBody;
+use ebitkov\Mailjet\Email\v3\Body\BulkManageContactsListBody;
 use ebitkov\Mailjet\Email\v3\Contact;
 use ebitkov\Mailjet\Email\v3\ContactsList;
 use ebitkov\Mailjet\Email\v3\Filter\ContactFilter;
 use ebitkov\Mailjet\Email\v3\Filter\ContactsListFilters;
 use ebitkov\Mailjet\Email\v3\Filter\SubscriptionFilters;
+use ebitkov\Mailjet\Email\v3\Job;
 use ebitkov\Mailjet\Email\v3\SentEmail;
 use ebitkov\Mailjet\Email\v3\Subscription;
 use ebitkov\Mailjet\Email\v3dot1\SentMessageList;
@@ -558,5 +561,30 @@ final class Client
             ContactsList::class,
             objectToPopulate: $list
         );
+    }
+
+    /**
+     * Manage multiple contacts by adding, removing or unsubscribing them from multiple contact lists.
+     * @see https://dev.mailjet.com/email/reference/contacts/bulk-contact-management/
+     *
+     * @throws RequestFailed
+     * @throws RequestAborted
+     */
+    public function bulkManageContacts(array $contacts, array $lists)
+    {
+        $response = $this->post(
+            Resources::$ContactManagemanycontacts,
+            [
+                'body' => (new BulkManageContactsBody())->resolve([
+                    'Contacts' => $contacts,
+                    'ContactsLists' => $lists
+                ])
+            ],
+            [
+                'version' => 'v3'
+            ]
+        );
+
+        return $this->serializeResult($response, Job::class);
     }
 }

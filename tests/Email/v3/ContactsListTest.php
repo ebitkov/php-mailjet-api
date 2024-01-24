@@ -40,7 +40,7 @@ class ContactsListTest extends MailjetApiTestCase
 
         $this->assertSame(
             1,
-            $list->unsubscribeAllContacts()
+            $list->unsubscribeAllContacts()->count()
         );
     }
 
@@ -53,7 +53,7 @@ class ContactsListTest extends MailjetApiTestCase
             1,
             $list->subscribe([
                 $contact
-            ])
+            ])->count()
         );
     }
 }

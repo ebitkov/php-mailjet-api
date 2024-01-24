@@ -9,7 +9,6 @@ use ebitkov\Mailjet\RequestAborted;
 use ebitkov\Mailjet\RequestFailed;
 use ebitkov\Mailjet\Result;
 use InvalidArgumentException;
-use Mailjet\Resources;
 
 /**
  * Contact List objects help you organize your contacts into lists.
@@ -47,10 +46,12 @@ final class ContactsList implements Resource
      * Unsubscribes all its contacts from the list.
      * Requires additional requests to get all subscribed contacts.
      *
+     * @return Result<Job>
+     *
      * @throws RequestFailed
      * @throws RequestAborted
      */
-    public function unsubscribeAllContacts(): int
+    public function unsubscribeAllContacts(): Result
     {
         $subscriber = $this->getSubscribedContacts();
 
@@ -59,30 +60,15 @@ final class ContactsList implements Resource
             $contacts[] = ['Email' => $item->getEmail()];
         }
 
-        if (!empty($contacts)) {
-            // send request
-            $result = $this->client->post(
-                Resources::$ContactManagemanycontacts,
+        return $this->client->bulkManageContacts(
+            $contacts,
+            [
                 [
-                    'body' => [
-                        'Contacts' => $contacts,
-                        'ContactsLists' => [
-                            [
-                                'ListID' => $this->id,
-                                'Action' => 'unsub'
-                            ]
-                        ]
-                    ]
-                ],
-                [
-                    'version' => 'v3'
+                    'ListID' => $this->id,
+                    'Action' => 'unsub'
                 ]
-            );
-
-            return $result->success() ? 1 : 0;
-        }
-
-        return -1;
+            ]
+        );
     }
 
     /**
@@ -105,10 +91,12 @@ final class ContactsList implements Resource
      *
      * @param Contact[] $contacts
      *
+     * @return Result<Job>
+     *
      * @throws RequestFailed
      * @throws RequestAborted
      */
-    public function subscribe(array $contacts, bool $forceAdd = false): int
+    public function subscribe(array $contacts, bool $forceAdd = false): Result
     {
         $toSubscribe = [];
         foreach ($contacts as $contact) {
@@ -122,25 +110,15 @@ final class ContactsList implements Resource
         }
 
         // send request
-        $result = $this->client->post(
-            Resources::$ContactManagemanycontacts,
+        return $this->client->bulkManageContacts(
+            $toSubscribe,
             [
-                'body' => [
-                    'Contacts' => $toSubscribe,
-                    'ContactsLists' => [
-                        [
-                            'ListID' => $this->id,
-                            'Action' => $forceAdd ? 'addforce' : 'addnoforce'
-                        ]
-                    ]
+                [
+                    'ListID' => $this->id,
+                    'Action' => $forceAdd ? 'addforce' : 'addnoforce'
                 ]
-            ],
-            [
-                'version' => 'v3'
             ]
         );
-
-        return $result->success() ? 1 : 0;
     }
 
     /**
