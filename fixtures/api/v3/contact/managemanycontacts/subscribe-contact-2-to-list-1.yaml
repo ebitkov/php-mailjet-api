@@ -1,0 +1,24 @@
+request:
+    method: post
+    resource:
+        - 'contact'
+        - 'managemanycontacts'
+    
+    args:
+        body:
+            Contacts:
+                -   Email: passenger@mailjet.com
+            ContactsLists:
+                -   ListID: 1
+                    Action: addnoforce
+    
+    options:
+        version: v3
+
+response:
+    status: 200
+    body:
+        Count: 1
+        Total: 1
+        Data:
+            -   JobID: 2

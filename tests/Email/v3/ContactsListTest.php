@@ -43,4 +43,17 @@ class ContactsListTest extends MailjetApiTestCase
             $list->unsubscribeAllContacts()
         );
     }
+
+    public function testSubscribe(): void
+    {
+        $list = $this->getContactsList();
+        $contact = $this->getClient()->getContactById(2);
+
+        $this->assertSame(
+            1,
+            $list->subscribe([
+                $contact
+            ])
+        );
+    }
 }

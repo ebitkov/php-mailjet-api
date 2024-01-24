@@ -8,6 +8,7 @@ use ebitkov\Mailjet\Email\Resource;
 use ebitkov\Mailjet\RequestAborted;
 use ebitkov\Mailjet\RequestFailed;
 use ebitkov\Mailjet\Result;
+use InvalidArgumentException;
 use Mailjet\Resources;
 
 /**
@@ -97,6 +98,49 @@ final class ContactsList implements Resource
         return $this->client->getContacts([
             'ContactsList' => $this->id
         ]);
+    }
+
+    /**
+     * Subscribes a list of contacts to the list.
+     *
+     * @param Contact[] $contacts
+     *
+     * @throws RequestFailed
+     * @throws RequestAborted
+     */
+    public function subscribe(array $contacts, bool $forceAdd = false): int
+    {
+        $toSubscribe = [];
+        foreach ($contacts as $contact) {
+            if (!$contact instanceof Contact) {
+                throw new InvalidArgumentException('Item of $contacts has to be instance of ' . Contact::class);
+            }
+
+            $toSubscribe[] = [
+                'Email' => $contact->getEmail()
+            ];
+        }
+
+        // send request
+        $result = $this->client->post(
+            Resources::$ContactManagemanycontacts,
+            [
+                'body' => [
+                    'Contacts' => $toSubscribe,
+                    'ContactsLists' => [
+                        [
+                            'ListID' => $this->id,
+                            'Action' => $forceAdd ? 'addforce' : 'addnoforce'
+                        ]
+                    ]
+                ]
+            ],
+            [
+                'version' => 'v3'
+            ]
+        );
+
+        return $result->success() ? 1 : 0;
     }
 
     /**
