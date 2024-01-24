@@ -2,7 +2,6 @@
 
 namespace ebitkov\Mailjet;
 
-use ebitkov\Mailjet\Email\EmailList;
 use ebitkov\Mailjet\Email\Resource;
 use ebitkov\Mailjet\Email\v3\Body\BulkManageContactsBody;
 use ebitkov\Mailjet\Email\v3\Body\BulkManageContactsListBody;
@@ -12,8 +11,10 @@ use ebitkov\Mailjet\Email\v3\Filter\ContactFilter;
 use ebitkov\Mailjet\Email\v3\Filter\ContactsListFilters;
 use ebitkov\Mailjet\Email\v3\Filter\SubscriptionFilters;
 use ebitkov\Mailjet\Email\v3\Job;
+use ebitkov\Mailjet\Email\v3\Message;
 use ebitkov\Mailjet\Email\v3\SentEmail;
 use ebitkov\Mailjet\Email\v3\Subscription;
+use ebitkov\Mailjet\Email\v3dot1\EmailList;
 use ebitkov\Mailjet\Email\v3dot1\SentMessageList;
 use ebitkov\Mailjet\Serializer\NameConverter\MailjetNameConverter;
 use ebitkov\Mailjet\Serializer\Normalizer\MailjetEmailNormalizer;
@@ -69,9 +70,9 @@ final class Client
             nameConverter: new MailjetNameConverter(),
             propertyTypeExtractor: new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]),
             defaultContext: [
-                AbstractNormalizer::REQUIRE_ALL_PROPERTIES => true,
                 AbstractObjectNormalizer::PRESERVE_EMPTY_OBJECTS => false,
                 AbstractObjectNormalizer::SKIP_NULL_VALUES => true,
+                AbstractObjectNormalizer::SKIP_UNINITIALIZED_VALUES => true,
             ]
         );
 
@@ -393,33 +394,43 @@ final class Client
      * Sends email messages via the Send API.
      * Automatically adjusts the request corresponding to the configured version (v3 / v3.1).
      *
-     * @return Result<SentEmail>
+     * @see https://dev.mailjet.com/email/reference/send-emails/
+     *
+     * @return Result<SentEmail|SentMessageList>
      *
      * @throws RequestFailed
      * @throws RequestAborted
      * @throws ExceptionInterface
      */
-    public function sendEmail(EmailList $emailList): Result
+    public function send(EmailList|Message $messages): Result
     {
         // validate data
-        $violations = $this->validate($emailList);
+        $violations = $this->validate($messages);
 
         if (0 !== count($violations)) {
             // return the first violation as an exception
             throw new InvalidArgumentException($violations->get(0)->getMessage());
         }
 
+        // detect API version to use
+        $version = 'v3.1';
+        $returnResource = SentMessageList::class;
+        if ($messages instanceof Message) {
+            $version = 'v3';
+            $returnResource = SentEmail::class;
+        }
+
         $response = $this->post(
             Resources::$Email,
             [
-                'body' => $this->normalize($emailList, 'send_api')
+                'body' => $this->normalize($messages, 'send_api')
             ],
             [
-                'version' => $this->settings[self::API_VERSION]
+                'version' => $version
             ]
         );
 
-        return $this->serializeResult($response, $this->isV3() ? SentEmail::class : SentMessageList::class);
+        return $this->serializeResult($response, $returnResource);
     }
 
     public function validate(object $object): ConstraintViolationListInterface
@@ -456,11 +467,6 @@ final class Client
                 'mj_api_version' => $this->settings[self::API_VERSION]
             ]
         );
-    }
-
-    private function isV3(): bool
-    {
-        return $this->settings[self::API_VERSION] == 'v3';
     }
 
     public function getApiVersion(): string
@@ -586,5 +592,10 @@ final class Client
         );
 
         return $this->serializeResult($response, Job::class);
+    }
+
+    private function isV3(): bool
+    {
+        return $this->settings[self::API_VERSION] == 'v3';
     }
 }

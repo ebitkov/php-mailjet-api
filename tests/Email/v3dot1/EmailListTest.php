@@ -1,13 +1,13 @@
 <?php
 
-namespace Email;
+namespace ebitkov\Mailjet\Tests\Email\v3dot1;
 
 use ebitkov\Mailjet\Email\Attachment;
 use ebitkov\Mailjet\Email\EmailAddress;
-use ebitkov\Mailjet\Email\EmailList;
 use ebitkov\Mailjet\Email\InlineAttachment;
-use ebitkov\Mailjet\Email\Message;
 use ebitkov\Mailjet\Email\v3\SentEmail;
+use ebitkov\Mailjet\Email\v3dot1\EmailList;
+use ebitkov\Mailjet\Email\v3dot1\Message;
 use ebitkov\Mailjet\Email\v3dot1\MessageError;
 use ebitkov\Mailjet\Email\v3dot1\SentMessage;
 use ebitkov\Mailjet\Email\v3dot1\SentMessageList;
@@ -20,26 +20,6 @@ use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 class EmailListTest extends MailjetApiTestCase
 {
-    public function testSendV3Email(): void
-    {
-        $client = $this->getClient('v3');
-        $email = $this->getBasicEmailList();
-
-        $result = $client->sendEmail($email);
-
-        $this->assertInstanceOf(Result::class, $result);
-        // the Send API does not return a total count
-        $this->assertNull($result->totalCount);
-        $this->assertSame(1, $result->count());
-
-        $sentMail = $result->first();
-        $this->assertInstanceOf(SentEmail::class, $sentMail);
-
-        $this->assertSame('passenger@mailjet.com', $sentMail->email);
-        $this->assertSame(1234567890987654400, $sentMail->messageId);
-        $this->assertSame('1ab23cd4-e567-8901-2345-6789f0gh1i2j', $sentMail->messageUuid);
-    }
-
     private static function getBasicEmailList(): EmailList
     {
         $emailList = new EmailList();
@@ -55,56 +35,6 @@ class EmailListTest extends MailjetApiTestCase
         $emailList->addMessage($message);
 
         return $emailList;
-    }
-
-    /**
-     * @throws ExceptionInterface
-     * @throws Exception
-     */
-    public function testFullNormalizeV3(): void
-    {
-        $client = $this->getClient('v3');
-        $emailList = $this->getFullEmailList();
-
-        $expected = [
-            'FromEmail' => 'pilot@mailjet.com',
-            'FromName' => 'Your Mailjet Pilot',
-            'Sender' => true,
-            'To' => '"Passenger 1" <passenger@mailjet.com>',
-            'Cc' => '"Passenger 4" <passenger4@mailjet.com>, "Passenger 5" <passenger5@mailjet.com>',
-            'Bcc' => '"Passenger 6" <passenger6@mailjet.com>, "Passenger 7" <passenger7@mailjet.com>',
-            'Subject' => 'Your email flight plan!',
-            'Text-part' => 'Dear passenger, welcome to Mailjet! May the delivery force be with you!',
-            'Html-part' => '<h3>Dear passenger, welcome to Mailjet!</h3><br />May the delivery force be with you!',
-            'Mj-TemplateID' => 123456,
-            'Mj-TemplateLanguage' => false,
-            'Mj-TemplateErrorReporting' => 'flightcontrol@mailjet.com',
-            'Mj-TemplateErrorDeliver' => '0',
-            'Attachments' => [
-                [
-                    'Filename' => 'image.jpg',
-                    'Content-type' => 'image/jpeg',
-                    'Content' => 'data:image/jpeg;base64,'
-                ]
-            ],
-            'Inline_attachments' => [
-                [
-                    'Filename' => 'image.jpg',
-                    'Content-type' => 'image/jpeg',
-                    'Content' => 'data:image/jpeg;base64,'
-                ]
-            ],
-            'Mj-prio' => 2,
-            'Mj-campaign' => 'Test',
-            'Mj-deduplicatecampaign' => 0,
-            'Mj-trackopen' => 0,
-            'Mj-CustomID' => '123456',
-            'Vars' => [
-                'foo' => 'bar'
-            ]
-        ];
-
-        $this->assertEquals($expected, $client->normalize($emailList, 'send_api'));
     }
 
     private function getFullEmailList(): EmailList
@@ -165,10 +95,9 @@ class EmailListTest extends MailjetApiTestCase
         return $email;
     }
 
-    public function testFullNormalizeV3dot1(): void
+    public function testFullNormalization(): void
     {
         $client = $this->getClient();
-        $this->assertSame('v3.1', $client->getApiVersion());
 
         $emailList = $this->getFullEmailList();
 
@@ -260,7 +189,7 @@ class EmailListTest extends MailjetApiTestCase
      * @throws ExceptionInterface
      * @throws Exception
      */
-    public function testBasicNormalizationV3dot1(): void
+    public function testBasicNormalization(): void
     {
         $expected = [
             'Messages' => [
@@ -295,11 +224,11 @@ class EmailListTest extends MailjetApiTestCase
      * @throws RequestFailed
      * @throws ExceptionInterface
      */
-    public function testSendV3dot1(): void
+    public function testSend(): void
     {
         $client = $this->getClient();
         $emailList = $this->getBasicEmailList();
-        $result = $client->sendEmail($emailList);
+        $result = $client->send($emailList);
 
         $this->assertSame(1, $result->count());
 

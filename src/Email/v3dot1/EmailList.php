@@ -1,6 +1,6 @@
 <?php
 
-namespace ebitkov\Mailjet\Email;
+namespace ebitkov\Mailjet\Email\v3dot1;
 
 use Symfony\Component\Validator\Constraints as Assert;
 

@@ -1,12 +1,15 @@
 <?php
 
-namespace ebitkov\Mailjet\Email;
+namespace ebitkov\Mailjet\Email\v3dot1;
 
+use ebitkov\Mailjet\Email\Attachment;
+use ebitkov\Mailjet\Email\EmailAddress;
+use ebitkov\Mailjet\Email\InlineAttachment;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * An email message.
- * Used in combination with Email.
+ * Used in combination with EmailList.
  * @see https://dev.mailjet.com/email/reference/send-emails#v3_1_post_send
  */
 final class Message
@@ -29,7 +32,7 @@ final class Message
     #[Assert\All([
         new Assert\Type(EmailAddress::class)
     ])]
-    private array $cc = [];
+    private ?array $cc = null;
 
     /**
      * @var EmailAddress[]
@@ -37,7 +40,7 @@ final class Message
     #[Assert\All([
         new Assert\Type(EmailAddress::class)
     ])]
-    private array $bcc = [];
+    private ?array $bcc = null;
 
     private EmailAddress $replyTo;
 
@@ -61,7 +64,7 @@ final class Message
     #[Assert\All([
         new Assert\Type(Attachment::class)
     ])]
-    private array $attachments = [];
+    private ?array $attachments;
 
     /**
      * @var InlineAttachment[]
@@ -69,7 +72,7 @@ final class Message
     #[Assert\All([
         new Assert\Type(InlineAttachment::class)
     ])]
-    private array $inlineAttachments = [];
+    private ?array $inlineAttachments;
 
     private int $priority;
 
