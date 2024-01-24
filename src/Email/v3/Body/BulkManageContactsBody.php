@@ -9,8 +9,8 @@ final class BulkManageContactsBody extends OptionsResolver
     public function __construct()
     {
         $this
-            ->setDefault('Contacts', function (OptionsResolver $contactsResolver) {
-                $contactsResolver
+            ->setDefault('Contacts', function (OptionsResolver $resolver) {
+                $resolver
                     ->setPrototype(true)
                     ->setRequired('Email')
                     ->setDefined(['Name', 'IsExcludedFromCampaigns', 'Properties'])
@@ -19,8 +19,8 @@ final class BulkManageContactsBody extends OptionsResolver
                     ->setAllowedTypes('IsExcludedFromCampaigns', 'bool')
                     ->setAllowedTypes('Properties', 'array');
             })
-            ->setDefault('ContactsLists', function (OptionsResolver $listResolver) {
-                $listResolver
+            ->setDefault('ContactsLists', function (OptionsResolver $resolver) {
+                $resolver
                     ->setPrototype(true)
                     ->setRequired(['ListID', 'Action'])
                     ->setAllowedTypes('ListID', 'int')
