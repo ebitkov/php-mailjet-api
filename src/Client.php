@@ -482,4 +482,30 @@ final class Client
 
         return $contact;
     }
+
+    /**
+     * Retrieve all contact lists for a specific contact.
+     * @see https://dev.mailjet.com/email/reference/contacts/subscriptions#v3_get_contact_contact_ID_getcontactslists
+     *
+     * @param int $contactId Unique numeric ID of the contact you want to retrieve the contact lists for.
+     *
+     * @return Result<Subscription>
+     *
+     * @throws RequestAborted
+     * @throws RequestFailed
+     */
+    public function getContactsListsByContact(int $contactId):Result
+    {
+        $response = $this->get(
+            Resources::$ContactGetcontactslists,
+            [
+                'id' => $contactId
+            ],
+            [
+                'version' => 'v3'
+            ]
+        );
+
+        return $this->serializeResult($response, Subscription::class);
+    }
 }

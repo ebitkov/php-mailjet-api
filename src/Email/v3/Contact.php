@@ -5,6 +5,10 @@ namespace ebitkov\Mailjet\Email\v3;
 use DateTimeImmutable;
 use ebitkov\Mailjet\ClientAware;
 use ebitkov\Mailjet\Email\Resource;
+use ebitkov\Mailjet\RequestAborted;
+use ebitkov\Mailjet\RequestFailed;
+use ebitkov\Mailjet\Result;
+use Mailjet\Resources;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 final class Contact implements Resource
@@ -85,17 +89,6 @@ final class Contact implements Resource
         return $this;
     }
 
-    public function getEmail(): ?string
-    {
-        return $this->email;
-    }
-
-    public function setEmail(string $email): self
-    {
-        $this->email = $email;
-        return $this;
-    }
-
     public function getExclusionFromCampaignsUpdatedAt(): ?DateTimeImmutable
     {
         return $this->exclusionFromCampaignsUpdatedAt;
@@ -104,17 +97,6 @@ final class Contact implements Resource
     public function setExclusionFromCampaignsUpdatedAt(DateTimeImmutable $exclusionFromCampaignsUpdatedAt): self
     {
         $this->exclusionFromCampaignsUpdatedAt = $exclusionFromCampaignsUpdatedAt;
-        return $this;
-    }
-
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    public function setId(int $id): self
-    {
-        $this->id = $id;
         return $this;
     }
 
@@ -183,5 +165,82 @@ final class Contact implements Resource
         return $this;
     }
 
-    # todo: getSubscribedLists() (/contact/{contact_ID}/getcontactslists)
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * Unsubscribes the contact from all its lists.
+     *
+     * @return int<-1, 1> 1 on success, 0 on error, -1 if nothing changed
+     *
+     * @throws RequestAborted
+     * @throws RequestFailed
+     */
+    public function unsubscribeFromAllLists(): int
+    {
+        // get all subscribed lists
+        $subscribedLists = $this->getSubscribedLists();
+
+        $lists = [];
+        foreach ($subscribedLists as $item) {
+            $lists[] = [
+                'ListID' => $item->getListId(),
+                'Action' => 'unsub'
+            ];
+        }
+
+        if (!empty($lists)) {
+            // send request
+            $result = $this->client->post(
+                Resources::$ContactManagemanycontacts,
+                [
+                    'body' => [
+                        'Contacts' => [
+                            [
+                                'Email' => $this->getEmail()
+                            ]
+                        ],
+                        'ContactsLists' => $lists
+                    ]
+                ],
+                [
+                    'version' => 'v3'
+                ]
+            );
+
+            return $result->success() ? 1 : 0;
+        }
+
+        return -1;
+    }
+
+    /**
+     * @return Result<Subscription>
+     *
+     * @throws RequestAborted
+     * @throws RequestFailed
+     */
+    public function getSubscribedLists(): Result
+    {
+        return $this->client->getContactsListsByContact($this->getId());
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): self
+    {
+        $this->email = $email;
+        return $this;
+    }
 }

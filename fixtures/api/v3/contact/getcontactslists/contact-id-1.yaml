@@ -1,0 +1,22 @@
+request:
+    method: get
+    resource:
+        - 'contact'
+        - 'getcontactslists'
+    
+    args:
+        id: 1
+    
+    options:
+        version: v3
+
+response:
+    status: 200
+    body:
+        Count: 1
+        Total: 1
+        Data:
+            -   ListID: 1
+                IsUnsub: false
+                IsActive: true
+                SubscribedAt: "2018-01-01T00:00:00"
