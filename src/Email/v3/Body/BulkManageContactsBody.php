@@ -24,7 +24,7 @@ final class BulkManageContactsBody extends OptionsResolver
                     ->setPrototype(true)
                     ->setRequired(['ListID', 'Action'])
                     ->setAllowedTypes('ListID', 'int')
-                    ->setAllowedValues('Action', ['addforce', 'addnoforce', 'remove', 'unsub']);
+                    ->setAllowedValues('Action', ManageContactsListsBody::ACTIONS);
             });
     }
 }

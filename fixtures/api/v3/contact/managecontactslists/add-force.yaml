@@ -1,0 +1,25 @@
+request:
+    method: post
+    resource:
+        - 'contact'
+        - 'managecontactslists'
+    
+    args:
+        id: 1
+        body:
+            ContactsLists:
+                -   ListID: 1
+                    Action: addforce
+    
+    options:
+        version: v3
+
+response:
+    status: 201
+    body:
+        Count: 1
+        Total: 1
+        Data:
+            ContactsLists:
+                -   ListID: 1
+                    Action: addforce

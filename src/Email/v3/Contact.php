@@ -8,7 +8,9 @@ use ebitkov\Mailjet\Email\Resource;
 use ebitkov\Mailjet\RequestAborted;
 use ebitkov\Mailjet\RequestFailed;
 use ebitkov\Mailjet\Result;
+use InvalidArgumentException;
 use Mailjet\Resources;
+use Mailjet\Response;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 final class Contact implements Resource
@@ -242,5 +244,39 @@ final class Contact implements Resource
     {
         $this->email = $email;
         return $this;
+    }
+
+    /**
+     * @param ContactsList[] $contactsLists
+     *
+     * @throws RequestAborted
+     * @throws RequestFailed
+     */
+    public function subscribeToLists(array $contactsLists, bool $force = false): ?Response
+    {
+        $lists = [];
+        foreach ($contactsLists as $list) {
+            if (!$list instanceof ContactsList) {
+                throw new InvalidArgumentException(
+                    sprintf(
+                        'First parameter of %s::subscribeToLists($contactsLists, ...) must an array of %s items.',
+                        self::class,
+                        ContactsList::class
+                    )
+                );
+            }
+            $lists[] = [
+                'ListID' => $list->id,
+                'Action' => $force ? 'addforce' : 'addnoforce'
+            ];
+        }
+
+        if (!empty($lists)) {
+            return $this->client->manageContactsLists(
+                $this->id,
+                $lists
+            );
+        }
+        return null;
     }
 }

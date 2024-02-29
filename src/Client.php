@@ -5,6 +5,7 @@ namespace ebitkov\Mailjet;
 use ebitkov\Mailjet\Email\Resource;
 use ebitkov\Mailjet\Email\v3\Body\BulkManageContactsBody;
 use ebitkov\Mailjet\Email\v3\Body\BulkManageContactsListBody;
+use ebitkov\Mailjet\Email\v3\Body\ManageContactsListsBody;
 use ebitkov\Mailjet\Email\v3\Contact;
 use ebitkov\Mailjet\Email\v3\ContactsList;
 use ebitkov\Mailjet\Email\v3\Filter\ContactFilter;
@@ -405,6 +406,37 @@ final class Client
     }
 
     /**
+     * Creates or updates a contacts list.
+     * Auto-selects the corresponding method (POST or UPDATE).
+     *
+     * @throws RequestAborted
+     * @throws RequestFailed
+     */
+    public function persistContactsList(ContactsList $list): void
+    {
+        # todo: Support UPDATE
+
+        $response = $this->post(
+            Resources::$Contactslist,
+            [
+                'body' => [
+                    'Name' => $list->name,
+                    'IsDeleted' => $list->isDeleted ?? false,
+                ]
+            ],
+            [
+                'version' => 'v3'
+            ]
+        );
+
+        $this->serializeResult(
+            $response,
+            ContactsList::class,
+            objectToPopulate: $list
+        );
+    }
+
+    /**
      * Sends a POST request.
      *
      * @param array<int<0, 2>, string|array<string, string>> $resource
@@ -553,37 +585,6 @@ final class Client
     }
 
     /**
-     * Creates or updates a contacts list.
-     * Auto-selects the corresponding method (POST or UPDATE).
-     *
-     * @throws RequestAborted
-     * @throws RequestFailed
-     */
-    public function persistContactsList(ContactsList $list): void
-    {
-        # todo: Support UPDATE
-
-        $response = $this->post(
-            Resources::$Contactslist,
-            [
-                'body' => [
-                    'Name' => $list->name,
-                    'IsDeleted' => $list->isDeleted ?? false,
-                ]
-            ],
-            [
-                'version' => 'v3'
-            ]
-        );
-
-        $this->serializeResult(
-            $response,
-            ContactsList::class,
-            objectToPopulate: $list
-        );
-    }
-
-    /**
      * Manage multiple contacts by adding, removing or unsubscribing them from multiple contact lists.
      * @see https://dev.mailjet.com/email/reference/contacts/bulk-contact-management/
      *
@@ -606,6 +607,32 @@ final class Client
         );
 
         return $this->serializeResult($response, Job::class);
+    }
+
+    /**
+     * Manage the presence and subscription status of a contact for multiple contact lists. Select the contact lists,
+     * as well as the desired action to be performed on each one - add, remove or unsub.
+     * The contact should already be present in the global contact list.
+     *
+     * @see https://dev.mailjet.com/email/reference/contacts/subscriptions/#v3_post_contact_contact_ID_managecontactslists
+     *
+     * @throws RequestAborted
+     * @throws RequestFailed
+     */
+    public function manageContactsLists(int $contactId, array $lists): Response
+    {
+        return $this->post(
+            Resources::$ContactManagecontactslists,
+            [
+                'id' => $contactId,
+                'body' => (new ManageContactsListsBody())->resolve([
+                    'ContactsLists' => $lists
+                ])
+            ],
+            [
+                'version' => 'v3'
+            ]
+        );
     }
 
     private function isV3(): bool

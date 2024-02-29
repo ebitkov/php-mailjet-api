@@ -106,4 +106,27 @@ class ClientTest extends MailjetApiTestCase
         $this->assertSame('foo bar', $list->name);
         $this->assertSame(false, $list->isDeleted);
     }
+
+    public function testManageContactsListsSubscribeNoForce(): void
+    {
+        $client = $this->getClient();
+
+        $lists = [
+            [
+                'ListID' => 1,
+                'Action' => 'addnoforce'
+            ]
+        ];
+
+        $response = $client->manageContactsLists(
+            1,
+            $lists
+        );
+
+        $this->assertNotNull($response);
+        $this->assertTrue($response->success());
+        $this->assertSame(1, $response->getCount());
+        $this->assertSame(1, $response->getTotal());
+        $this->assertSame(['ContactsLists' => $lists], $response->getData());
+    }
 }
