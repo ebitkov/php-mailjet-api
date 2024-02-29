@@ -27,6 +27,14 @@ final class ContactsList implements Resource
     public int $id;
     public int $subscriberCount;
 
+
+    public function __construct(string $name, bool $isDeleted = false)
+    {
+        $this->name = $name;
+        $this->isDeleted = $isDeleted;
+    }
+
+
     /**
      * Returns all subscriptions of this list.
      *

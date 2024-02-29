@@ -391,6 +391,35 @@ final class Client
     }
 
     /**
+     * Creates a new contact list.
+     * @see https://dev.mailjet.com/email/reference/contacts/contact-list/#v3_post_contactslist
+     *
+     * @throws RequestFailed
+     * @throws RequestAborted
+     */
+    public function createContactsList(string $name, bool $isDeleted = false): ContactsList
+    {
+        $list = new ContactsList($name, $isDeleted);
+        $this->persistContactsList($list);
+        return $list;
+    }
+
+    /**
+     * Sends a POST request.
+     *
+     * @param array<int<0, 2>, string|array<string, string>> $resource
+     * @param array<string, mixed> $args
+     * @param array<string, mixed> $options
+     *
+     * @throws RequestAborted
+     * @throws RequestFailed
+     */
+    public function post(array $resource, array $args = [], array $options = []): Response
+    {
+        return $this->sendRequest('post', $resource, $args, $options);
+    }
+
+    /**
      * Sends email messages via the Send API.
      * Automatically adjusts the request corresponding to the configured version (v3 / v3.1).
      *
@@ -436,21 +465,6 @@ final class Client
     public function validate(object $object): ConstraintViolationListInterface
     {
         return $this->validator->validate($object);
-    }
-
-    /**
-     * Sends a POST request.
-     *
-     * @param array<int<0, 2>, string|array<string, string>> $resource
-     * @param array<string, mixed> $args
-     * @param array<string, mixed> $options
-     *
-     * @throws RequestAborted
-     * @throws RequestFailed
-     */
-    public function post(array $resource, array $args = [], array $options = []): Response
-    {
-        return $this->sendRequest('post', $resource, $args, $options);
     }
 
     /**
