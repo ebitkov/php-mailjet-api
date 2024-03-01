@@ -45,4 +45,22 @@ class ContactTest extends MailjetApiTestCase
         $this->assertNotNull($response);
         $this->assertTrue($response->success());
     }
+
+    public function testIsSubscribedToListIsTrue(): void
+    {
+        $client = $this->getClient();
+        $contact = $client->getContactById(1);
+        $list = $client->getContactsListById(1);
+
+        $this->assertTrue($contact->isSubscribedToList($list));
+    }
+
+    public function testIsSubscribedToListIsFalse(): void
+    {
+        $client = $this->getClient();
+        $contact = $client->getContactById(1);
+        $list = $client->getContactsListById(2);
+
+        $this->assertFalse($contact->isSubscribedToList($list));
+    }
 }

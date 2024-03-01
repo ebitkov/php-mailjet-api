@@ -5,6 +5,7 @@ namespace ebitkov\Mailjet\Email\v3;
 use DateTimeImmutable;
 use ebitkov\Mailjet\ClientAware;
 use ebitkov\Mailjet\Email\Resource;
+use ebitkov\Mailjet\Email\v3\Filter\SubscriptionFilters;
 use ebitkov\Mailjet\RequestAborted;
 use ebitkov\Mailjet\RequestFailed;
 use ebitkov\Mailjet\Result;
@@ -278,5 +279,22 @@ final class Contact implements Resource
             );
         }
         return null;
+    }
+
+    /**
+     * Checks, if a Contact is subscribed to a list.
+     *
+     * @throws RequestFailed
+     * @throws RequestAborted
+     */
+    public function isSubscribedToList(ContactsList $list): bool
+    {
+        $subs = $this->client->getListRecipients([
+            SubscriptionFilters::CONTACT => $this->id,
+            SubscriptionFilters::CONTACTS_LIST => $list->id,
+            SubscriptionFilters::UNSUB => false
+        ]);
+
+        return $subs->count() === 1;
     }
 }

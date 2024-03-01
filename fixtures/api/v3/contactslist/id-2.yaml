@@ -1,0 +1,22 @@
+request:
+    method: get
+    resource: [ 'contactslist', '' ]
+    
+    args:
+        id: 2
+    
+    options:
+        version: v3
+
+response:
+    status: 200
+    body:
+        Count: 1
+        Total: 1
+        Data:
+            -   Address: "abc123456"
+                CreatedAt: "2020-03-30T09:12:34Z"
+                ID: 2
+                IsDeleted: false
+                Name: "Empty List"
+                SubscriberCount: 0
